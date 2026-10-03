@@ -1,0 +1,1236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SnapStub</title>
+<meta name="description" content="Snap a receipt, name it, and email it as a PDF.">
+<meta name="theme-color" content="#0a0f1f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SnapStub">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0a0f1f;
+  --bg2: #121a38;
+  --card: rgba(255,255,255,.055);
+  --card-hi: rgba(255,255,255,.09);
+  --line: rgba(255,255,255,.10);
+  --text: #eef1ff;
+  --muted: #98a2c8;
+  --a1: #22d3ee;
+  --a2: #8b5cf6;
+  --grad: linear-gradient(135deg, var(--a1), var(--a2));
+  --danger: #fb7185;
+  --ok: #34d399;
+  --radius: 20px;
+  --tabbar: 64px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; }
+body {
+  font: 16px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(900px 500px at 0% -10%, rgba(34,211,238,.18), transparent 60%),
+    radial-gradient(800px 500px at 110% 10%, rgba(139,92,246,.22), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  min-height: 100vh;
+  overscroll-behavior-y: none;
+}
+button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; padding: 0; }
+input, select, textarea { font: inherit; color: var(--text); }
+h1, h2, h3, p { margin: 0; }
+[hidden] { display: none !important; }
+
+/* Header */
+.top {
+  position: sticky; top: 0; z-index: 5;
+  padding: calc(var(--safe-t) + 12px) 20px 12px;
+  display: flex; align-items: center; gap: 12px;
+  background: linear-gradient(to bottom, rgba(10,15,31,.92), rgba(10,15,31,.75));
+  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--line);
+}
+.top img { width: 36px; height: 36px; border-radius: 10px; box-shadow: 0 4px 14px rgba(139,92,246,.4); }
+.brand { font-weight: 800; font-size: 21px; letter-spacing: -.02em; }
+.brand span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.tagline { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+main { padding: 16px 16px calc(var(--tabbar) + var(--safe-b) + 28px); max-width: 640px; margin: 0 auto; }
+.tab { display: none; animation: fade .25s ease; }
+.tab.active { display: block; }
+@keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.section-head { margin: 4px 4px 14px; }
+.section-head h2 { font-size: 28px; font-weight: 800; letter-spacing: -.03em; }
+.section-head p { color: var(--muted); font-size: 14px; margin-top: 2px; }
+.muted { color: var(--muted); }
+small.muted, .small { font-size: 13px; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 14px;
+}
+.card h3 { font-size: 17px; font-weight: 700; margin-bottom: 12px; letter-spacing: -.01em; }
+.row-between { display: flex; justify-content: space-between; align-items: baseline; }
+.row-between h3 { margin-bottom: 12px; }
+
+/* Buttons */
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 14px 18px; border-radius: 16px;
+  font-weight: 700; font-size: 16px; transition: transform .1s ease, opacity .2s;
+}
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .45; }
+.btn.big { padding: 17px 18px; font-size: 17px; }
+.btn.primary { background: var(--grad); color: #fff; box-shadow: 0 10px 30px -10px rgba(139,92,246,.7); }
+.btn.secondary { background: var(--card-hi); border: 1px solid var(--line); }
+.btn.ghost { color: var(--muted); }
+.btn.danger { background: rgba(251,113,133,.12); color: var(--danger); border: 1px solid rgba(251,113,133,.25); }
+.btn svg { width: 20px; height: 20px; }
+.link { color: var(--a1); font-weight: 600; font-size: 15px; padding: 8px 4px; }
+.link.danger { color: var(--danger); }
+.row-center { display: flex; justify-content: center; align-items: center; gap: 6px; color: var(--muted); }
+.actions { display: grid; gap: 10px; margin-top: 4px; }
+
+/* Hero */
+.hero { text-align: center; padding: 34px 22px 24px; position: relative; overflow: hidden; }
+.hero::before {
+  content: ""; position: absolute; inset: -40% -20% auto; height: 260px;
+  background: radial-gradient(closest-side, rgba(139,92,246,.35), transparent);
+  pointer-events: none;
+}
+.hero-art { width: 120px; height: 120px; margin: 0 auto 18px; position: relative; }
+.hero-art img { width: 100%; height: 100%; border-radius: 30px; box-shadow: 0 18px 50px -12px rgba(34,211,238,.55); }
+.hero h2 { font-size: 26px; font-weight: 800; letter-spacing: -.03em; position: relative; }
+.hero p { color: var(--muted); margin: 6px auto 22px; max-width: 280px; position: relative; }
+.hero .btn { position: relative; }
+.hero .btn + .btn { margin-top: 8px; }
+.steps { display: flex; justify-content: center; gap: 18px; margin-top: 18px; font-size: 13px; color: var(--muted); }
+.steps b { color: var(--text); }
+
+.install {
+  display: flex; gap: 12px; align-items: center;
+  background: linear-gradient(135deg, rgba(34,211,238,.12), rgba(139,92,246,.14));
+  border: 1px solid rgba(139,92,246,.3); border-radius: 16px; padding: 12px 14px; margin-bottom: 14px; font-size: 14px;
+}
+.install .x { margin-left: auto; color: var(--muted); font-size: 22px; padding: 0 4px; }
+
+/* Pages strip */
+.pages { display: flex; gap: 12px; overflow-x: auto; padding: 2px 2px 8px; scroll-snap-type: x mandatory; }
+.page {
+  flex: 0 0 auto; width: 132px; height: 176px; border-radius: 14px; overflow: hidden; position: relative;
+  background: #fff1; border: 1px solid var(--line); scroll-snap-align: start;
+}
+.page img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.page .num { position: absolute; left: 8px; top: 8px; background: rgba(0,0,0,.6); font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 99px; }
+.page .tools { position: absolute; right: 6px; bottom: 6px; display: flex; gap: 6px; }
+.page .tools button, .page .del {
+  width: 34px; height: 34px; border-radius: 50%; background: rgba(10,15,31,.75);
+  display: grid; place-items: center; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+.page .del { position: absolute; right: 6px; top: 6px; width: 30px; height: 30px; }
+.page svg { width: 18px; height: 18px; }
+.page .busy { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(10,15,31,.55); }
+.spinner { width: 28px; height: 28px; border-radius: 50%; border: 3px solid rgba(255,255,255,.2); border-top-color: var(--a1); animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.add-page {
+  flex: 0 0 auto; width: 132px; height: 176px; border-radius: 14px; border: 1.5px dashed rgba(255,255,255,.22);
+  display: flex; flex-direction: column; align-items: stretch; justify-content: center; gap: 8px; padding: 10px;
+}
+.add-page .lbl { text-align: center; font-size: 13px; color: var(--muted); font-weight: 600; }
+.add-page button { background: var(--card-hi); border-radius: 10px; padding: 9px 4px; font-size: 13px; font-weight: 700; }
+
+/* Switch row */
+.switch-row { display: flex; align-items: center; gap: 12px; padding-top: 12px; margin-top: 6px; border-top: 1px solid var(--line); cursor: pointer; }
+.form label.switch-row { display: flex; font-size: 16px; color: var(--text); margin-left: 0; }
+.switch-row > span { flex: 1; font-weight: 600; }
+.switch-row small { display: block; color: var(--muted); font-weight: 400; font-size: 13px; }
+.switch-row input { display: none; }
+.switch { width: 50px; height: 30px; border-radius: 99px; background: rgba(255,255,255,.16); position: relative; transition: background .2s; flex: 0 0 auto; }
+.switch::after { content: ""; position: absolute; left: 3px; top: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 2px 6px rgba(0,0,0,.3); }
+.switch-row input:checked + .switch { background: var(--grad); }
+.switch-row input:checked + .switch::after { transform: translateX(20px); }
+
+/* Forms */
+.form label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin: 0 0 6px 2px; }
+.form .field { margin-bottom: 14px; }
+.input, .form input:not([type=checkbox]), .form select, .form textarea {
+  width: 100%; padding: 13px 14px; border-radius: 13px; font-size: 16px;
+  background: rgba(255,255,255,.06); border: 1px solid var(--line); outline: none;
+  transition: border-color .15s, background .15s; -webkit-appearance: none; appearance: none;
+}
+.form input:focus, .form select:focus, .input:focus { border-color: rgba(34,211,238,.6); background: rgba(255,255,255,.09); }
+.form select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 20px) 55%, calc(100% - 14px) 55%; background-size: 6px 6px; background-repeat: no-repeat; padding-right: 36px; }
+.form input[type=date] { min-height: 49px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.prefix { position: relative; }
+.prefix span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-weight: 600; }
+.prefix input { padding-left: 28px !important; }
+.invalid { border-color: var(--danger) !important; animation: shake .3s; }
+@keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  padding: 8px 12px; border-radius: 99px; font-size: 14px; font-weight: 600;
+  background: rgba(255,255,255,.06); border: 1px solid var(--line); color: var(--muted);
+}
+.chip.on { background: var(--grad); color: #fff; border-color: transparent; }
+
+.filename {
+  margin-top: 16px; padding: 12px 14px; border-radius: 13px;
+  background: rgba(0,0,0,.25); border: 1px dashed var(--line);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.filename span { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+.filename code { font: 600 14px/1.35 ui-monospace, "SF Mono", Menlo, monospace; color: var(--a1); word-break: break-all; }
+
+/* Lists */
+.list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.item {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 10px 12px 10px 10px;
+}
+.item:active { background: var(--card-hi); }
+.thumb { width: 50px; height: 62px; border-radius: 9px; object-fit: cover; background: #fff2; flex: 0 0 auto; }
+.meta { flex: 1; min-width: 0; }
+.meta .t { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.meta .s { font-size: 13px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.amt { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 99px; margin-top: 4px; }
+.badge.sent { background: rgba(52,211,153,.14); color: var(--ok); }
+.badge.batch { background: rgba(139,92,246,.18); color: #c4b5fd; }
+.rm { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; color: var(--muted); background: rgba(255,255,255,.06); flex: 0 0 auto; }
+.rm svg { width: 16px; height: 16px; }
+.month { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin: 18px 6px 8px; }
+.month:first-child { margin-top: 4px; }
+
+.summary { display: flex; justify-content: space-around; text-align: center; padding: 16px; }
+.summary .n { font-size: 26px; font-weight: 800; letter-spacing: -.02em; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.summary .l { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+
+.empty { text-align: center; padding: 44px 24px; color: var(--muted); }
+.empty .ico { font-size: 44px; margin-bottom: 10px; }
+.empty b { color: var(--text); display: block; font-size: 18px; margin-bottom: 4px; }
+
+.search { width: 100%; margin-bottom: 8px; }
+
+.email-slot { display: grid; grid-template-columns: 34% 1fr; gap: 8px; margin-bottom: 10px; }
+
+/* Tab bar */
+.tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  padding: 6px 8px calc(var(--safe-b) + 6px);
+  background: rgba(12,17,36,.82); backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border-top: 1px solid var(--line);
+}
+.tabbar button { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; color: var(--muted); font-size: 11px; font-weight: 600; position: relative; }
+.tabbar svg { width: 25px; height: 25px; }
+.tabbar button.active { color: var(--text); }
+.tabbar button.active svg { stroke: url(#tabgrad); }
+.tabbar .count {
+  position: absolute; top: 0; left: calc(50% + 6px); min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: 99px; background: var(--danger); color: #fff; font-size: 11px; font-weight: 800; display: grid; place-items: center;
+}
+
+/* Bottom sheet */
+.sheet-wrap { position: fixed; inset: 0; z-index: 50; display: none; }
+.sheet-wrap.open { display: block; }
+.backdrop { position: absolute; inset: 0; background: rgba(3,6,15,.6); animation: fadeIn .2s ease; }
+@keyframes fadeIn { from { opacity: 0; } }
+.sheet {
+  position: absolute; left: 0; right: 0; bottom: 0; max-height: 92vh; overflow-y: auto;
+  max-width: 640px; margin: 0 auto;
+  background: linear-gradient(to bottom, #182148, #10173a);
+  border: 1px solid var(--line); border-bottom: 0; border-radius: 26px 26px 0 0;
+  padding: 10px 18px calc(var(--safe-b) + 20px);
+  animation: up .28s cubic-bezier(.2,.9,.3,1);
+}
+@keyframes up { from { transform: translateY(100%); } }
+.grabber { width: 40px; height: 5px; border-radius: 9px; background: rgba(255,255,255,.25); margin: 0 auto 12px; }
+.sheet h2 { font-size: 22px; font-weight: 800; letter-spacing: -.02em; }
+.sheet .sub { color: var(--muted); font-size: 14px; margin: 4px 0 16px; }
+.sheet .close { position: absolute; right: 14px; top: 14px; width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,.08); display: grid; place-items: center; color: var(--muted); }
+.sheet .close svg { width: 16px; height: 16px; }
+.filelist { background: rgba(0,0,0,.22); border-radius: 13px; padding: 10px 12px; margin-bottom: 16px; max-height: 150px; overflow-y: auto; }
+.filelist div { font: 600 13px/1.6 ui-monospace, "SF Mono", Menlo, monospace; color: var(--a1); word-break: break-all; }
+.howto { counter-reset: s; list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 8px; }
+.howto li { counter-increment: s; display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--muted); }
+.howto li::before { content: counter(s); flex: 0 0 22px; height: 22px; border-radius: 50%; background: rgba(139,92,246,.25); color: #ddd6fe; font-size: 12px; font-weight: 800; display: grid; place-items: center; }
+.howto b { color: var(--text); }
+.detail-pages { display: flex; gap: 10px; overflow-x: auto; margin: 4px 0 16px; }
+.detail-pages img { height: 260px; border-radius: 12px; border: 1px solid var(--line); background: #fff; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 14px; margin: 10px 0 16px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; text-align: right; word-break: break-all; }
+
+/* Toast */
+#toast {
+  position: fixed; left: 50%; bottom: calc(var(--tabbar) + var(--safe-b) + 18px); z-index: 60;
+  transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+  background: #f1f3ff; color: #101632; font-weight: 700; font-size: 15px;
+  padding: 12px 18px; border-radius: 14px; box-shadow: 0 12px 30px rgba(0,0,0,.4);
+  transition: all .25s ease; max-width: calc(100% - 32px); text-align: center;
+}
+#toast.show { transform: translate(-50%, 0); opacity: 1; }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs><linearGradient id="tabgrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
+</svg>
+
+<header class="top">
+  <img src="icons/icon-192.png" alt="">
+  <div>
+    <div class="brand">Snap<span>Stub</span></div>
+    <div class="tagline">Snap it. Name it. Send it.</div>
+  </div>
+</header>
+
+<main>
+  <!-- CAPTURE -->
+  <section class="tab active" id="tab-capture">
+    <div class="install" id="installHint" hidden>
+      <span style="font-size:22px">📲</span>
+      <div><b>Install SnapStub:</b> tap <b>Share</b> then <b>Add to Home Screen</b>.</div>
+      <button class="x" data-act="hideInstall" aria-label="Dismiss">×</button>
+    </div>
+
+    <div class="card hero" id="capEmpty">
+      <div class="hero-art"><img src="icons/icon-512.png" alt=""></div>
+      <h2>Snap a receipt</h2>
+      <p>It becomes a neatly named PDF, ready for your expense report.</p>
+      <button class="btn primary big" data-act="camera">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Take Photo
+      </button>
+      <button class="btn ghost" data-act="library">Choose from Photos</button>
+      <div class="steps"><span><b>1</b> Snap</span><span><b>2</b> Name</span><span><b>3</b> Send</span></div>
+    </div>
+
+    <div id="capEdit" hidden>
+      <div class="card">
+        <div class="row-between"><h3>Pages</h3><span class="muted small" id="pageCount"></span></div>
+        <div class="pages" id="pages"></div>
+        <label class="switch-row">
+          <span>✨ Clean up image<small>Black &amp; white with sharper text</small></span>
+          <input type="checkbox" id="enhance"><i class="switch"></i>
+        </label>
+      </div>
+
+      <div class="card form">
+        <h3>Details</h3>
+        <div class="grid2">
+          <div class="field"><label for="fDate">Date</label><input type="date" id="fDate"></div>
+          <div class="field"><label for="fAmount">Amount</label><div class="prefix"><span>$</span><input id="fAmount" inputmode="decimal" placeholder="0.00" autocomplete="off"></div></div>
+        </div>
+        <div class="field"><label for="fVendor">Vendor</label><input id="fVendor" placeholder="e.g. Delta, Marriott, Chipotle" autocapitalize="words" autocomplete="off"></div>
+        <div class="field"><label>Category</label><div class="chips" id="fCats"></div></div>
+        <div class="field" style="margin-bottom:0"><label for="fNote">Note <span style="font-weight:400">(optional)</span></label><input id="fNote" placeholder="e.g. Client dinner with ACME" autocomplete="off"></div>
+        <div class="filename"><span>File name</span><code id="fName"></code></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary big" data-act="emailNow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>
+          Email now
+        </button>
+        <button class="btn secondary big" data-act="addBatch">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          Add to batch
+        </button>
+        <div class="row-center">
+          <button class="link" data-act="saveOnly">Save to history only</button>·<button class="link danger" data-act="discard">Discard</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BATCH -->
+  <section class="tab" id="tab-batch">
+    <div class="section-head"><h2>Batch</h2><p>Collect receipts during a trip, then send them all at once.</p></div>
+    <div id="batchFull">
+      <div class="card summary">
+        <div><div class="n" id="bCount">0</div><div class="l">Receipts</div></div>
+        <div><div class="n" id="bTotal">$0.00</div><div class="l">Total</div></div>
+      </div>
+      <div class="list" id="batchList"></div>
+      <div class="actions" style="margin-top:16px">
+        <button class="btn primary big" data-act="sendBatch">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>
+          Email batch
+        </button>
+        <div class="row-center"><button class="link danger" data-act="clearBatch">Empty batch</button></div>
+      </div>
+    </div>
+    <div class="empty" id="batchEmpty">
+      <div class="ico">🧳</div>
+      <b>Your batch is empty</b>
+      Tap <b style="display:inline;font-size:inherit">Add to batch</b> after snapping a receipt to save it here for later.
+    </div>
+  </section>
+
+  <!-- HISTORY -->
+  <section class="tab" id="tab-history">
+    <div class="section-head"><h2>History</h2><p id="hSub">Every receipt you've captured.</p></div>
+    <div class="form"><input type="search" class="search" id="hSearch" placeholder="Search vendor, category, note, amount…"></div>
+    <div id="histList"></div>
+    <div class="empty" id="histEmpty" hidden>
+      <div class="ico">🗂️</div>
+      <b>No receipts yet</b>
+      Receipts you capture will show up here.
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="tab" id="tab-settings">
+    <div class="section-head"><h2>Settings</h2><p>Changes save automatically.</p></div>
+
+    <div class="card form">
+      <h3>Saved email addresses</h3>
+      <p class="muted small" style="margin:-6px 0 14px">Save up to three. When sending, pick one, all, or type another.</p>
+      <div id="emailSlots"></div>
+    </div>
+
+    <div class="card form">
+      <h3>Defaults</h3>
+      <div class="field" style="margin-bottom:0">
+        <label for="sCat">Default category</label>
+        <select id="sCat"></select>
+      </div>
+      <label class="switch-row" style="margin-top:14px">
+        <span>✨ Clean up images by default<small>Black &amp; white with sharper text</small></span>
+        <input type="checkbox" id="sEnhance"><i class="switch"></i>
+      </label>
+    </div>
+
+    <div class="card">
+      <h3>Storage</h3>
+      <p class="muted small" id="storageInfo" style="margin-bottom:14px">Calculating…</p>
+      <button class="btn danger" data-act="wipe">Delete all history</button>
+    </div>
+
+    <div class="card">
+      <h3>Install on your iPhone</h3>
+      <ol class="howto" style="margin-top:0">
+        <li><span>Open this page in <b>Safari</b>.</span></li>
+        <li><span>Tap the <b>Share</b> button (square with arrow).</span></li>
+        <li><span>Choose <b>Add to Home Screen</b>, then <b>Add</b>.</span></li>
+      </ol>
+    </div>
+
+    <p class="muted small" style="text-align:center;margin-top:8px">SnapStub v1.0 · Your receipts stay on this phone.</p>
+  </section>
+</main>
+
+<nav class="tabbar">
+  <button data-tab="capture" class="active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    Capture
+  </button>
+  <button data-tab="batch">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+    Batch
+    <span class="count" id="batchCount" hidden>0</span>
+  </button>
+  <button data-tab="history">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+    History
+  </button>
+  <button data-tab="settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    Settings
+  </button>
+</nav>
+
+<div class="sheet-wrap" id="sheetWrap">
+  <div class="backdrop" data-act="closeSheet"></div>
+  <div class="sheet" role="dialog" aria-modal="true">
+    <div class="grabber"></div>
+    <button class="close" data-act="closeSheet" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <div id="sheetBody"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<input type="file" id="camIn" accept="image/*" capture="environment" hidden>
+<input type="file" id="libIn" accept="image/*" multiple hidden>
+
+<script>
+'use strict';
+
+/* ---------- Helpers ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const CATEGORIES = ['Airfare', 'Lodging', 'Meals', 'Ground Transport', 'Rental Car', 'Fuel', 'Parking & Tolls', 'Supplies', 'Entertainment', 'Other'];
+const CAT_EMOJI = { 'Airfare': '✈️', 'Lodging': '🏨', 'Meals': '🍽️', 'Ground Transport': '🚕', 'Rental Car': '🚗', 'Fuel': '⛽', 'Parking & Tolls': '🅿️', 'Supplies': '📎', 'Entertainment': '🎟️', 'Other': '🧾' };
+const EMAIL_RE = /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/;
+const ICON_X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+const ICON_ROT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>';
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pad = n => String(n).padStart(2, '0');
+const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+const isoToDate = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
+const fmtDate = iso => iso ? isoToDate(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+const parseAmount = s => { const n = parseFloat(String(s).replace(/[^0-9.]/g, '')); return isFinite(n) ? Math.round(n * 100) / 100 : null; };
+const fmtMoney = n => n == null ? '' : n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+const slug = s => String(s || '').normalize('NFKD').replace(/[^A-Za-z0-9\s.-]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-').slice(0, 40);
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+const sum = recs => recs.reduce((t, r) => t + (r.amount || 0), 0);
+
+function fileNameFor({ date, vendor, category, amount }) {
+  const parts = [date || todayISO(), slug(vendor) || 'Receipt', slug(category)];
+  if (amount != null) parts.push(amount.toFixed(2));
+  return parts.filter(Boolean).join('_') + '.pdf';
+}
+
+let toastTimer;
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+function flagInvalid(el) {
+  el.classList.remove('invalid');
+  void el.offsetWidth;
+  el.classList.add('invalid');
+  el.focus();
+  setTimeout(() => el.classList.remove('invalid'), 1500);
+}
+
+/* ---------- Settings (small, kept in localStorage) ---------- */
+const Settings = {
+  key: 'snapstub.settings',
+  data: null,
+  load() {
+    let s = {};
+    try { s = JSON.parse(localStorage.getItem(this.key)) || {}; } catch {}
+    const emails = [0, 1, 2].map(i => ({ label: '', address: '', ...((s.emails || [])[i] || {}) }));
+    this.data = { defaultCategory: 'Meals', enhance: false, lastRecipient: '', setupDone: false, hideInstall: false, ...s, emails };
+  },
+  save() { try { localStorage.setItem(this.key, JSON.stringify(this.data)); } catch {} },
+  saved() { return this.data.emails.filter(e => EMAIL_RE.test(e.address.trim())).map(e => ({ label: e.label.trim(), address: e.address.trim() })); }
+};
+
+/* ---------- Receipt storage (IndexedDB, pages kept as JPEG bytes) ---------- */
+const DB = (() => {
+  let opening;
+  const open = () => opening || (opening = new Promise((res, rej) => {
+    const r = indexedDB.open('snapstub', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('receipts', { keyPath: 'id' });
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  }));
+  async function run(mode, fn) {
+    const db = await open();
+    return new Promise((res, rej) => {
+      const tx = db.transaction('receipts', mode);
+      const req = fn(tx.objectStore('receipts'));
+      tx.oncomplete = () => res(req && req.result);
+      tx.onerror = tx.onabort = () => rej(tx.error);
+    });
+  }
+  return {
+    all: () => run('readonly', s => s.getAll()),
+    put: rec => run('readwrite', s => s.put(rec)),
+    del: id => run('readwrite', s => s.delete(id)),
+    clear: () => run('readwrite', s => s.clear())
+  };
+})();
+
+let records = [];
+const thumbs = new Map();
+function thumbUrl(rec) {
+  if (!thumbs.has(rec.id)) thumbs.set(rec.id, URL.createObjectURL(new Blob([rec.pages[0].buf], { type: 'image/jpeg' })));
+  return thumbs.get(rec.id);
+}
+function dropThumb(id) {
+  if (thumbs.has(id)) { URL.revokeObjectURL(thumbs.get(id)); thumbs.delete(id); }
+}
+
+async function refreshData() {
+  records = (await DB.all()).sort((a, b) => b.createdAt - a.createdAt);
+  renderBatch();
+  renderHistory();
+  renderStorage();
+}
+
+/* ---------- Image processing ---------- */
+function loadImage(blob) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); res(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('Could not read that image')); };
+    img.src = url;
+  });
+}
+
+function enhanceCanvas(ctx, w, h) {
+  const data = ctx.getImageData(0, 0, w, h);
+  const p = data.data;
+  const hist = new Uint32Array(256);
+  for (let i = 0; i < p.length; i += 4) {
+    const y = (p[i] * 299 + p[i + 1] * 587 + p[i + 2] * 114) / 1000 | 0;
+    p[i] = y;
+    hist[y]++;
+  }
+  // Stretch so the darkest ink goes black and the paper goes white.
+  const n = w * h;
+  let lo = 0, hi = 255, acc = 0;
+  while (lo < 254 && (acc += hist[lo]) < n * 0.02) lo++;
+  acc = 0;
+  while (hi > 1 && (acc += hist[hi]) < n * 0.12) hi--;
+  if (hi - lo < 40) { lo = 0; hi = 255; }
+  const lut = new Uint8ClampedArray(256);
+  for (let v = 0; v < 256; v++) {
+    const t = Math.min(1, Math.max(0, (v - lo) / (hi - lo)));
+    lut[v] = Math.pow(t, 1.35) * 255;
+  }
+  for (let i = 0; i < p.length; i += 4) { const v = lut[p[i]]; p[i] = p[i + 1] = p[i + 2] = v; }
+  ctx.putImageData(data, 0, 0);
+}
+
+async function processPage(src, rot, enhance) {
+  const img = await loadImage(src);
+  const MAX = 2000;
+  const s = Math.min(1, MAX / Math.max(img.naturalWidth, img.naturalHeight));
+  const w = Math.round(img.naturalWidth * s), h = Math.round(img.naturalHeight * s);
+  const swap = rot === 90 || rot === 270;
+  const c = document.createElement('canvas');
+  c.width = swap ? h : w;
+  c.height = swap ? w : h;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.translate(c.width / 2, c.height / 2);
+  ctx.rotate(rot * Math.PI / 180);
+  ctx.drawImage(img, -w / 2, -h / 2, w, h);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  if (enhance) enhanceCanvas(ctx, c.width, c.height);
+  const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.82));
+  return { blob, w: c.width, h: c.height };
+}
+
+/* ---------- PDF builder (images embedded as JPEG, US Letter pages) ---------- */
+function buildPdf(pages, title) {
+  const enc = new TextEncoder();
+  const parts = [];
+  const offs = [];
+  let pos = 0;
+  const w = d => { const b = typeof d === 'string' ? enc.encode(d) : d; parts.push(b); pos += b.byteLength; };
+  const obj = (n, body) => { offs[n] = pos; w(`${n} 0 obj\n`); body(); w('\nendobj\n'); };
+  const total = 3 + pages.length * 3;
+
+  w('%PDF-1.4\n%âãÏÓ\n');
+  obj(1, () => w('<< /Type /Catalog /Pages 2 0 R >>'));
+  obj(2, () => w(`<< /Type /Pages /Count ${pages.length} /Kids [${pages.map((_, i) => `${4 + i * 3} 0 R`).join(' ')}] >>`));
+  const safeTitle = String(title).replace(/[^\x20-\x7e]/g, '').replace(/([\\()])/g, '\\$1');
+  obj(3, () => w(`<< /Title (${safeTitle}) /Producer (SnapStub) >>`));
+
+  pages.forEach((p, i) => {
+    const landscape = p.w > p.h;
+    const PW = landscape ? 792 : 612, PH = landscape ? 612 : 792, M = 24;
+    const s = Math.min((PW - 2 * M) / p.w, (PH - 2 * M) / p.h);
+    const dw = p.w * s, dh = p.h * s, x = (PW - dw) / 2, y = PH - M - dh;
+    const pg = 4 + i * 3, ct = pg + 1, im = pg + 2;
+    obj(pg, () => w(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PW} ${PH}] /Resources << /XObject << /Im0 ${im} 0 R >> >> /Contents ${ct} 0 R >>`));
+    const cs = `q ${dw.toFixed(2)} 0 0 ${dh.toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)} cm /Im0 Do Q`;
+    obj(ct, () => w(`<< /Length ${cs.length} >>\nstream\n${cs}\nendstream`));
+    const bytes = new Uint8Array(p.buf);
+    obj(im, () => {
+      w(`<< /Type /XObject /Subtype /Image /Width ${p.w} /Height ${p.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${bytes.byteLength} >>\nstream\n`);
+      w(bytes);
+      w('\nendstream');
+    });
+  });
+
+  const xref = pos;
+  let x = `xref\n0 ${total + 1}\n0000000000 65535 f \n`;
+  for (let k = 1; k <= total; k++) x += `${String(offs[k]).padStart(10, '0')} 00000 n \n`;
+  w(x);
+  w(`trailer\n<< /Size ${total + 1} /Root 1 0 R /Info 3 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+  return new Blob(parts, { type: 'application/pdf' });
+}
+
+function recordToFile(rec) {
+  return new File([buildPdf(rec.pages, rec.fileName.replace(/\.pdf$/, ''))], rec.fileName, { type: 'application/pdf' });
+}
+
+function combinedName(recs) {
+  const dates = recs.map(r => r.date).sort();
+  const range = dates[0] === dates[dates.length - 1] ? dates[0] : `${dates[0]}_to_${dates[dates.length - 1]}`;
+  return `Receipts_${range}_${recs.length}-items.pdf`;
+}
+
+function combinedFile(recs) {
+  const ordered = [...recs].sort((a, b) => a.date.localeCompare(b.date) || a.createdAt - b.createdAt);
+  const name = combinedName(ordered);
+  return new File([buildPdf(ordered.flatMap(r => r.pages), name.replace(/\.pdf$/, ''))], name, { type: 'application/pdf' });
+}
+
+/* ---------- Bottom sheet ---------- */
+const Sheet = {
+  onClose: null,
+  open(html, onClose) {
+    if (this.onClose) this.onClose();
+    $('#sheetBody').innerHTML = html;
+    this.onClose = onClose || null;
+    $('#sheetWrap').classList.add('open');
+    $('.sheet').scrollTop = 0;
+  },
+  close() {
+    $('#sheetWrap').classList.remove('open');
+    if (this.onClose) { const f = this.onClose; this.onClose = null; f(); }
+    $('#sheetBody').innerHTML = '';
+  }
+};
+
+/* ---------- Tabs ---------- */
+function showTab(name) {
+  $$('.tabbar button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  $$('.tab').forEach(t => t.classList.toggle('active', t.id === 'tab-' + name));
+  window.scrollTo(0, 0);
+  if (name === 'settings') renderStorage();
+}
+
+/* ---------- Capture ---------- */
+const cap = { pages: [], category: null, enhance: false };
+
+function resetCapture() {
+  cap.pages.forEach(p => p.url && URL.revokeObjectURL(p.url));
+  cap.pages = [];
+  cap.category = Settings.data.defaultCategory;
+  cap.enhance = Settings.data.enhance;
+  $('#enhance').checked = cap.enhance;
+  $('#fDate').value = todayISO();
+  $('#fAmount').value = '';
+  $('#fVendor').value = '';
+  $('#fNote').value = '';
+  renderCats();
+  renderCapture();
+}
+
+function renderCats() {
+  $('#fCats').innerHTML = CATEGORIES.map(c =>
+    `<button type="button" class="chip${c === cap.category ? ' on' : ''}" data-cat="${esc(c)}">${CAT_EMOJI[c]} ${esc(c)}</button>`).join('');
+  updateFileName();
+}
+
+function captureFields() {
+  return {
+    date: $('#fDate').value || todayISO(),
+    vendor: $('#fVendor').value.trim(),
+    amount: parseAmount($('#fAmount').value),
+    category: cap.category,
+    note: $('#fNote').value.trim()
+  };
+}
+
+function updateFileName() { $('#fName').textContent = fileNameFor(captureFields()); }
+
+function renderCapture() {
+  const has = cap.pages.length > 0;
+  $('#capEmpty').hidden = has;
+  $('#capEdit').hidden = !has;
+  $('#installHint').hidden = !(isIOS() && !isStandalone() && !Settings.data.hideInstall);
+  if (!has) return;
+  $('#pageCount').textContent = cap.pages.length === 1 ? '1 page' : `${cap.pages.length} pages`;
+  $('#pages').innerHTML = cap.pages.map((p, i) => `
+    <div class="page" data-id="${p.id}">
+      ${p.url ? `<img src="${p.url}" alt="Page ${i + 1}">` : ''}
+      <span class="num">${i + 1}</span>
+      <button class="del" data-act="delPage" aria-label="Remove page">${ICON_X}</button>
+      <div class="tools"><button data-act="rotPage" aria-label="Rotate">${ICON_ROT}</button></div>
+      ${p.busy ? '<div class="busy"><div class="spinner"></div></div>' : ''}
+    </div>`).join('') + `
+    <div class="add-page">
+      <div class="lbl">Add page</div>
+      <button data-act="camera">📷 Camera</button>
+      <button data-act="library">🖼️ Photos</button>
+    </div>`;
+}
+
+function processCapPage(p) {
+  p.busy = true;
+  const job = processPage(p.src, p.rot, cap.enhance).then(out => {
+    if (p.job !== job) return;
+    if (p.url) URL.revokeObjectURL(p.url);
+    Object.assign(p, out, { url: URL.createObjectURL(out.blob), busy: false });
+    renderCapture();
+  }).catch(err => {
+    if (p.job !== job) return;
+    cap.pages = cap.pages.filter(x => x !== p);
+    renderCapture();
+    toast(err.message);
+  });
+  p.job = job;
+  renderCapture();
+}
+
+function addFiles(files) {
+  const wasEmpty = cap.pages.length === 0;
+  for (const f of files) {
+    if (!f.type.startsWith('image/') && !/\.(jpe?g|png|heic|heif|webp)$/i.test(f.name)) continue;
+    const p = { id: uid(), src: f, rot: 0, busy: true };
+    cap.pages.push(p);
+    processCapPage(p);
+  }
+  if (wasEmpty && cap.pages.length) {
+    window.scrollTo(0, 0);
+    setTimeout(() => $('#fVendor').focus({ preventScroll: true }), 50);
+  }
+}
+
+async function saveCapture(inBatch) {
+  if (!cap.pages.length) return null;
+  const f = captureFields();
+  if (!f.vendor) { flagInvalid($('#fVendor')); toast('Add the vendor name first'); return null; }
+  if (cap.pages.some(p => p.busy)) await Promise.all(cap.pages.map(p => p.job));
+  if (!cap.pages.length) return null;
+  const rec = {
+    id: uid(), createdAt: Date.now(), ...f, inBatch, sentAt: null,
+    pages: await Promise.all(cap.pages.map(async p => ({ buf: await p.blob.arrayBuffer(), w: p.w, h: p.h })))
+  };
+  rec.fileName = fileNameFor(rec);
+  await DB.put(rec);
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  resetCapture();
+  await refreshData();
+  return rec;
+}
+
+/* ---------- Sending ---------- */
+function emailSubject(recs) {
+  if (recs.length === 1) {
+    const r = recs[0];
+    return ['Receipt', r.vendor, r.category, fmtMoney(r.amount), fmtDate(r.date)].filter(Boolean).join(' – ');
+  }
+  const t = sum(recs);
+  return `Receipts (${recs.length})${t ? ' – ' + fmtMoney(t) + ' total' : ''}`;
+}
+
+function emailBody(recs) {
+  const lines = recs.map(r => '• ' + [fmtDate(r.date), r.vendor, r.category, fmtMoney(r.amount)].filter(Boolean).join(' | ') + (r.note ? ` — ${r.note}` : ''));
+  if (recs.length > 1) lines.push('', `Total: ${fmtMoney(sum(recs))}`);
+  return lines.join('\n') + '\n\nSent with SnapStub';
+}
+
+function downloadFile(file) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(file);
+  a.download = file.name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+}
+
+function openSend(recs, fromBatch = false) {
+  const saved = Settings.saved();
+  const multi = recs.length > 1;
+  let opts = saved.map((e, i) => `<option value="${i}">${esc(e.label ? `${e.label} – ${e.address}` : e.address)}</option>`).join('');
+  if (saved.length > 1) opts += `<option value="all">All saved addresses (${saved.length})</option>`;
+  opts += '<option value="other">Other…</option>';
+  const canShareFiles = !!(navigator.canShare && navigator.canShare({ files: [new File(['x'], 'x.pdf', { type: 'application/pdf' })] }));
+
+  Sheet.open(`
+    <h2>${multi ? `Send ${recs.length} receipts` : 'Send receipt'}</h2>
+    <p class="sub">${esc(emailSubject(recs))}</p>
+    <div class="filelist" id="sFiles"></div>
+    <div class="form">
+      ${multi ? `<label class="switch-row" style="border-top:0;margin:0 0 14px;padding:0">
+        <span>Combine into one PDF<small>Off = one PDF per receipt</small></span>
+        <input type="checkbox" id="sCombine"><i class="switch"></i></label>` : ''}
+      <div class="field">
+        <label for="sTo">Send to</label>
+        <select id="sTo">${opts}</select>
+      </div>
+      <div class="field" id="sOtherWrap" hidden>
+        <label for="sOther">Email address</label>
+        <input type="email" id="sOther" placeholder="name@example.com" autocomplete="email" autocapitalize="off">
+      </div>
+    </div>
+    <button class="btn primary big" id="sGo" disabled>Preparing PDF…</button>
+    ${canShareFiles ? `
+    <ol class="howto">
+      <li><span>Tap the button. The address is <b>copied</b> for you.</span></li>
+      <li><span>Choose <b>Mail</b> in the share sheet.</span></li>
+      <li><span>Tap the <b>To:</b> field, <b>Paste</b>, then <b>Send</b>.</span></li>
+    </ol>
+    <p class="muted small" style="margin-top:12px">Tip: pick <b>Save to Files</b> in the share sheet to keep a copy.</p>`
+    : `<p class="muted small" style="margin-top:12px">This browser can't attach files to email directly. The PDF will download and your email app will open, so you can attach it there.</p>`}
+  `);
+
+  const sel = $('#sTo');
+  const other = $('#sOther');
+  const go = $('#sGo');
+  let files = null;
+
+  const last = Settings.data.lastRecipient;
+  if ([...sel.options].some(o => o.value === last)) sel.value = last;
+  else sel.value = saved.length > 1 ? 'all' : saved.length ? '0' : 'other';
+  const syncOther = () => { $('#sOtherWrap').hidden = sel.value !== 'other'; };
+  syncOther();
+  sel.onchange = () => {
+    syncOther();
+    Settings.data.lastRecipient = sel.value;
+    Settings.save();
+    if (sel.value === 'other') other.focus();
+  };
+
+  const prepare = () => {
+    go.disabled = true;
+    go.textContent = 'Preparing PDF…';
+    files = null;
+    setTimeout(() => {
+      const combine = multi && $('#sCombine') && $('#sCombine').checked;
+      files = combine ? [combinedFile(recs)] : recs.map(recordToFile);
+      $('#sFiles').innerHTML = files.map(f => `<div>📄 ${esc(f.name)} <span class="muted">(${Math.max(1, Math.round(f.size / 1024))} KB)</span></div>`).join('');
+      go.disabled = false;
+      go.textContent = canShareFiles ? 'Copy address & Share' : 'Download & open email';
+    }, 30);
+  };
+  if (multi) $('#sCombine').onchange = prepare;
+  prepare();
+
+  // No awaits before navigator.share: iOS only allows it directly inside the tap.
+  go.onclick = () => {
+    let to;
+    if (sel.value === 'other') {
+      const v = other.value.trim();
+      if (!EMAIL_RE.test(v)) { flagInvalid(other); toast('Enter a valid email address'); return; }
+      to = [v];
+    } else if (sel.value === 'all') to = saved.map(e => e.address);
+    else to = [saved[+sel.value].address];
+    if (!files) return;
+    const toStr = to.join(', ');
+    const subject = emailSubject(recs), body = emailBody(recs);
+
+    if (canShareFiles && navigator.canShare({ files })) {
+      try { navigator.clipboard && navigator.clipboard.writeText(toStr).catch(() => {}); } catch {}
+      navigator.share({ files, title: subject, text: body })
+        .then(() => markSent(recs, fromBatch))
+        .catch(err => { if (err.name !== 'AbortError') toast('Could not share: ' + err.message); });
+    } else {
+      files.forEach(downloadFile);
+      setTimeout(() => {
+        location.href = `mailto:${to.join(',')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body + '\n\n(Attach the downloaded PDF.)')}`;
+      }, 400);
+      markSent(recs, fromBatch);
+    }
+  };
+}
+
+async function markSent(recs, fromBatch) {
+  const now = Date.now();
+  for (const r of recs) {
+    r.sentAt = now;
+    if (fromBatch) r.inBatch = false;
+    await DB.put(r);
+  }
+  Sheet.close();
+  await refreshData();
+  toast(fromBatch ? 'Sent! Batch cleared. Receipts remain in History.' : 'Sent! Saved in History.');
+}
+
+/* ---------- Batch ---------- */
+function itemHtml(r, { removable = false } = {}) {
+  const sub = [CAT_EMOJI[r.category] + ' ' + r.category, fmtDate(r.date), r.pages.length > 1 ? `${r.pages.length} pages` : ''].filter(Boolean).join(' · ');
+  const badge = r.sentAt ? '<span class="badge sent">Sent</span>' : (r.inBatch && !removable ? '<span class="badge batch">In batch</span>' : '');
+  return `
+    <div class="item" data-open="${r.id}" role="button" tabindex="0">
+      <img class="thumb" src="${thumbUrl(r)}" alt="">
+      <div class="meta"><div class="t">${esc(r.vendor || 'Receipt')}</div><div class="s">${esc(sub)}</div></div>
+      <div class="amt">${esc(fmtMoney(r.amount))}<br>${badge}</div>
+      ${removable ? `<button class="rm" data-unbatch="${r.id}" aria-label="Remove from batch">${ICON_X}</button>` : ''}
+    </div>`;
+}
+
+function batchRecs() { return records.filter(r => r.inBatch).sort((a, b) => a.date.localeCompare(b.date) || a.createdAt - b.createdAt); }
+
+function renderBatch() {
+  const b = batchRecs();
+  $('#batchFull').hidden = !b.length;
+  $('#batchEmpty').hidden = !!b.length;
+  $('#batchCount').hidden = !b.length;
+  $('#batchCount').textContent = b.length;
+  $('#bCount').textContent = b.length;
+  $('#bTotal').textContent = fmtMoney(sum(b));
+  $('#batchList').innerHTML = b.map(r => itemHtml(r, { removable: true })).join('');
+}
+
+/* ---------- History ---------- */
+function renderHistory() {
+  const q = $('#hSearch').value.trim().toLowerCase();
+  const list = q ? records.filter(r => [r.vendor, r.category, r.note, r.fileName, fmtMoney(r.amount), fmtDate(r.date)].join(' ').toLowerCase().includes(q)) : records;
+  $('#hSub').textContent = records.length ? `${records.length} receipt${records.length === 1 ? '' : 's'} · ${fmtMoney(sum(records))}` : "Every receipt you've captured.";
+  $('#histEmpty').hidden = list.length > 0;
+  $('#histEmpty b').textContent = records.length ? 'No matches' : 'No receipts yet';
+  let html = '', month = '';
+  for (const r of list) {
+    const m = isoToDate(r.date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    if (m !== month) { if (month) html += '</div>'; html += `<div class="month">${esc(m)}</div><div class="list">`; month = m; }
+    html += itemHtml(r);
+  }
+  if (month) html += '</div>';
+  $('#histList').innerHTML = html;
+}
+
+function openDetail(id) {
+  const r = records.find(x => x.id === id);
+  if (!r) return;
+  const urls = r.pages.map(p => URL.createObjectURL(new Blob([p.buf], { type: 'image/jpeg' })));
+  Sheet.open(`
+    <h2>${esc(r.vendor || 'Receipt')}</h2>
+    <p class="sub">${r.sentAt ? `✅ Sent ${new Date(r.sentAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}` : 'Not sent yet'}${r.inBatch ? ' · In batch' : ''}</p>
+    <div class="detail-pages">${urls.map((u, i) => `<img src="${u}" alt="Page ${i + 1}">`).join('')}</div>
+    <div class="form">
+      <div class="grid2">
+        <div class="field"><label for="dDate">Date</label><input type="date" id="dDate" value="${esc(r.date)}"></div>
+        <div class="field"><label for="dAmount">Amount</label><div class="prefix"><span>$</span><input id="dAmount" inputmode="decimal" value="${r.amount != null ? r.amount.toFixed(2) : ''}"></div></div>
+      </div>
+      <div class="field"><label for="dVendor">Vendor</label><input id="dVendor" value="${esc(r.vendor)}" autocapitalize="words"></div>
+      <div class="field"><label for="dCat">Category</label><select id="dCat">${CATEGORIES.map(c => `<option${c === r.category ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select></div>
+      <div class="field"><label for="dNote">Note</label><input id="dNote" value="${esc(r.note)}"></div>
+      <div class="filename" style="margin:0 0 16px"><span>File name</span><code id="dName">${esc(r.fileName)}</code></div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="dSend">Email this receipt</button>
+      <button class="btn secondary" id="dBatch">${r.inBatch ? 'Remove from batch' : 'Add to batch'}</button>
+      <div class="row-center"><button class="link danger" id="dDel">Delete receipt</button></div>
+    </div>
+  `, () => urls.forEach(URL.revokeObjectURL));
+
+  const fields = () => ({ date: $('#dDate').value || r.date, vendor: $('#dVendor').value.trim() || r.vendor, amount: parseAmount($('#dAmount').value), category: $('#dCat').value, note: $('#dNote').value.trim() });
+  const sync = () => { $('#dName').textContent = fileNameFor(fields()); };
+  $$('#sheetBody input, #sheetBody select').forEach(el => el.addEventListener('input', sync));
+  const commit = async () => {
+    Object.assign(r, fields());
+    r.fileName = fileNameFor(r);
+    await DB.put(r);
+    await refreshData();
+  };
+
+  $('#dSend').onclick = async () => { await commit(); openSend([r]); };
+  $('#dBatch').onclick = async () => {
+    r.inBatch = !r.inBatch;
+    await commit();
+    Sheet.close();
+    toast(r.inBatch ? `Added to batch (${batchRecs().length})` : 'Removed from batch');
+  };
+  $('#dDel').onclick = async () => {
+    if (!confirm('Delete this receipt from SnapStub? This cannot be undone.')) return;
+    await DB.del(r.id);
+    dropThumb(r.id);
+    Sheet.close();
+    await refreshData();
+    toast('Receipt deleted');
+  };
+  // Save edits when the sheet is dismissed with changes.
+  const prevClose = Sheet.onClose;
+  Sheet.onClose = () => {
+    prevClose && prevClose();
+    const f = fields();
+    if (f.date !== r.date || f.vendor !== r.vendor || f.amount !== r.amount || f.category !== r.category || f.note !== r.note) {
+      Object.assign(r, f);
+      r.fileName = fileNameFor(r);
+      DB.put(r).then(refreshData).then(() => toast('Changes saved'));
+    }
+  };
+}
+
+/* ---------- Settings UI ---------- */
+function renderSettings() {
+  $('#emailSlots').innerHTML = Settings.data.emails.map((e, i) => `
+    <div class="email-slot">
+      <input data-slot="${i}" data-k="label" placeholder="${['Work', 'Personal', 'Other'][i]}" value="${esc(e.label)}" aria-label="Label ${i + 1}">
+      <input data-slot="${i}" data-k="address" type="email" placeholder="email address" value="${esc(e.address)}" autocapitalize="off" autocomplete="email" aria-label="Email ${i + 1}">
+    </div>`).join('');
+  $('#sCat').innerHTML = CATEGORIES.map(c => `<option${c === Settings.data.defaultCategory ? ' selected' : ''}>${esc(c)}</option>`).join('');
+  $('#sEnhance').checked = Settings.data.enhance;
+}
+
+async function renderStorage() {
+  const n = records.length;
+  const bytes = records.reduce((t, r) => t + r.pages.reduce((s, p) => s + p.buf.byteLength, 0), 0);
+  const size = bytes > 1048576 ? (bytes / 1048576).toFixed(1) + ' MB' : Math.round(bytes / 1024) + ' KB';
+  $('#storageInfo').textContent = `${n} receipt${n === 1 ? '' : 's'} using about ${size} on this phone.`;
+}
+
+function openSetup() {
+  Sheet.open(`
+    <div style="text-align:center;margin:6px 0 18px">
+      <img src="icons/icon-192.png" alt="" style="width:76px;height:76px;border-radius:20px;box-shadow:0 12px 34px -8px rgba(139,92,246,.6)">
+      <h2 style="margin-top:14px">Welcome to SnapStub</h2>
+      <p class="sub" style="margin-bottom:0">Where should your receipts go? Save up to three addresses. You can change them later in Settings.</p>
+    </div>
+    <div class="form" id="setupSlots">
+      ${[0, 1, 2].map(i => `
+        <div class="email-slot">
+          <input data-k="label" placeholder="${['Work', 'Personal', 'Other'][i]}" value="${esc(Settings.data.emails[i].label || ['Work', 'Personal', ''][i])}" aria-label="Label ${i + 1}">
+          <input data-k="address" type="email" placeholder="email address" value="${esc(Settings.data.emails[i].address)}" autocapitalize="off" autocomplete="email" aria-label="Email ${i + 1}">
+        </div>`).join('')}
+    </div>
+    <div class="actions" style="margin-top:8px">
+      <button class="btn primary big" id="setupGo">Get started</button>
+    </div>
+  `, () => { Settings.data.setupDone = true; Settings.save(); });
+  $('#setupGo').onclick = () => {
+    const rows = $$('#setupSlots .email-slot');
+    for (const row of rows) {
+      const a = $('[data-k=address]', row);
+      if (a.value.trim() && !EMAIL_RE.test(a.value.trim())) { flagInvalid(a); toast('Check that email address'); return; }
+    }
+    rows.forEach((row, i) => {
+      const address = $('[data-k=address]', row).value.trim();
+      Settings.data.emails[i] = { label: address ? $('[data-k=label]', row).value.trim() : '', address };
+    });
+    Settings.data.setupDone = true;
+    Settings.save();
+    renderSettings();
+    Sheet.close();
+    toast(Settings.saved().length ? 'All set. Snap your first receipt!' : 'You can add emails later in Settings');
+  };
+}
+
+/* ---------- Platform ---------- */
+const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isStandalone = () => navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+
+/* ---------- Events ---------- */
+document.addEventListener('click', async e => {
+  const tabBtn = e.target.closest('[data-tab]');
+  if (tabBtn) { showTab(tabBtn.dataset.tab); return; }
+
+  const cat = e.target.closest('[data-cat]');
+  if (cat) { cap.category = cat.dataset.cat; renderCats(); return; }
+
+  const unb = e.target.closest('[data-unbatch]');
+  if (unb) {
+    const r = records.find(x => x.id === unb.dataset.unbatch);
+    if (r) { r.inBatch = false; await DB.put(r); await refreshData(); toast('Removed from batch'); }
+    return;
+  }
+
+  const open = e.target.closest('[data-open]');
+  if (open) { openDetail(open.dataset.open); return; }
+
+  const actEl = e.target.closest('[data-act]');
+  if (!actEl) return;
+  const act = actEl.dataset.act;
+
+  if (act === 'camera') { $('#camIn').value = ''; $('#camIn').click(); }
+  else if (act === 'library') { $('#libIn').value = ''; $('#libIn').click(); }
+  else if (act === 'closeSheet') Sheet.close();
+  else if (act === 'hideInstall') { Settings.data.hideInstall = true; Settings.save(); renderCapture(); }
+  else if (act === 'rotPage' || act === 'delPage') {
+    const id = actEl.closest('.page').dataset.id;
+    const p = cap.pages.find(x => x.id === id);
+    if (!p) return;
+    if (act === 'delPage') {
+      if (p.url) URL.revokeObjectURL(p.url);
+      p.job = null;
+      cap.pages = cap.pages.filter(x => x !== p);
+      renderCapture();
+    } else {
+      p.rot = (p.rot + 90) % 360;
+      processCapPage(p);
+    }
+  }
+  else if (act === 'discard') {
+    if (confirm('Discard this receipt?')) resetCapture();
+  }
+  else if (act === 'emailNow') {
+    const rec = await saveCapture(false);
+    if (rec) openSend([rec]);
+  }
+  else if (act === 'addBatch') {
+    const rec = await saveCapture(true);
+    if (rec) toast(`Added to batch (${batchRecs().length}) 🧳`);
+  }
+  else if (act === 'saveOnly') {
+    const rec = await saveCapture(false);
+    if (rec) toast('Saved to History');
+  }
+  else if (act === 'sendBatch') {
+    const b = batchRecs();
+    if (b.length) openSend(b, true);
+  }
+  else if (act === 'clearBatch') {
+    if (!confirm('Take all receipts out of the batch? They stay in History.')) return;
+    for (const r of batchRecs()) { r.inBatch = false; await DB.put(r); }
+    await refreshData();
+    toast('Batch emptied');
+  }
+  else if (act === 'wipe') {
+    if (!confirm('Delete ALL receipts from SnapStub? This cannot be undone.')) return;
+    await DB.clear();
+    [...thumbs.keys()].forEach(dropThumb);
+    await refreshData();
+    toast('History deleted');
+  }
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.matches('[data-open]')) openDetail(e.target.dataset.open);
+});
+
+$('#camIn').addEventListener('change', e => addFiles(e.target.files));
+$('#libIn').addEventListener('change', e => addFiles(e.target.files));
+$('#enhance').addEventListener('change', e => { cap.enhance = e.target.checked; cap.pages.forEach(processCapPage); });
+['#fDate', '#fAmount', '#fVendor', '#fNote'].forEach(s => $(s).addEventListener('input', updateFileName));
+$('#fAmount').addEventListener('blur', e => { const n = parseAmount(e.target.value); if (n != null) e.target.value = n.toFixed(2); });
+$('#hSearch').addEventListener('input', renderHistory);
+
+$('#emailSlots').addEventListener('change', e => {
+  const el = e.target.closest('[data-slot]');
+  if (!el) return;
+  const v = el.value.trim();
+  if (el.dataset.k === 'address' && v && !EMAIL_RE.test(v)) { flagInvalid(el); toast('That email address looks off'); return; }
+  Settings.data.emails[+el.dataset.slot][el.dataset.k] = v;
+  Settings.save();
+  toast('Saved');
+});
+$('#sCat').addEventListener('change', e => {
+  Settings.data.defaultCategory = e.target.value;
+  Settings.save();
+  if (!cap.pages.length) { cap.category = e.target.value; renderCats(); }
+  toast('Saved');
+});
+$('#sEnhance').addEventListener('change', e => {
+  Settings.data.enhance = e.target.checked;
+  Settings.save();
+  if (!cap.pages.length) { cap.enhance = e.target.checked; $('#enhance').checked = cap.enhance; }
+  toast('Saved');
+});
+
+/* ---------- Start ---------- */
+Settings.load();
+renderSettings();
+resetCapture();
+refreshData().catch(err => toast('Storage error: ' + err.message));
+if (!Settings.data.setupDone) openSetup();
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>

@@ -3,177 +3,216 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>SnapStub</title>
-<meta name="description" content="Snap a receipt, name it, and email it as a PDF.">
-<meta name="theme-color" content="#0a0f1f">
+<title>XpenseIt</title>
+<meta name="description" content="Snap. Filed. Done. Capture receipts as named PDFs and email them for your expense report.">
+<meta name="theme-color" content="#0F1A2E">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="SnapStub">
+<meta name="apple-mobile-web-app-title" content="XpenseIt">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
 <style>
+/* ---------- Theme tokens: light by default, dark follows the iPhone setting ---------- */
 :root {
-  color-scheme: dark;
-  --bg: #0a0f1f;
-  --bg2: #121a38;
-  --card: rgba(255,255,255,.055);
-  --card-hi: rgba(255,255,255,.09);
-  --line: rgba(255,255,255,.10);
-  --text: #eef1ff;
-  --muted: #98a2c8;
-  --a1: #22d3ee;
-  --a2: #8b5cf6;
-  --grad: linear-gradient(135deg, var(--a1), var(--a2));
-  --danger: #fb7185;
-  --ok: #34d399;
-  --radius: 20px;
-  --tabbar: 64px;
+  color-scheme: light dark;
+  --bg: #F5F1E8;
+  --surface: #FFFFFF;
+  --input: #FBF9F4;
+  --line: rgba(15, 26, 46, .10);
+  --line-strong: rgba(15, 26, 46, .20);
+  --text: #0F1A2E;
+  --muted: #687083;
+  --gold: #8C6A22;
+  --gold-fill: linear-gradient(135deg, #EAD196, #C29A45);
+  --btn-bg: #0F1A2E;
+  --btn-fg: #F1DFAE;
+  --btn-shadow: 0 10px 24px -12px rgba(15, 26, 46, .55);
+  --shadow: 0 1px 2px rgba(15, 26, 46, .05), 0 10px 26px -14px rgba(15, 26, 46, .22);
+  --danger: #B42318;
+  --ok: #067647;
+  --ok-bg: rgba(6, 118, 71, .10);
+  --sheet: #FFFFFF;
+  --backdrop: rgba(15, 26, 46, .45);
+  --tabbar: rgba(255, 255, 255, .88);
+  --toast-bg: #0F1A2E;
+  --toast-fg: #F5F1E8;
+  --navy: #0F1A2E;
+  --navy-2: #16243F;
+  --ivory: #F5F1E8;
+  --pale-gold: #E3C783;
+  --serif: ui-serif, "New York", "Iowan Old Style", Georgia, serif;
+  --radius: 18px;
+  --tabh: 64px;
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
 }
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0A1120;
+    --surface: #131C30;
+    --input: #0F1729;
+    --line: rgba(255, 255, 255, .08);
+    --line-strong: rgba(255, 255, 255, .18);
+    --text: #F3EEE3;
+    --muted: #8F98AE;
+    --gold: #D9B970;
+    --btn-bg: linear-gradient(135deg, #EBD39A, #C49B48);
+    --btn-fg: #0F1A2E;
+    --btn-shadow: 0 10px 28px -12px rgba(217, 185, 112, .45);
+    --shadow: 0 12px 30px -16px rgba(0, 0, 0, .7);
+    --danger: #F97066;
+    --ok: #47CD89;
+    --ok-bg: rgba(71, 205, 137, .12);
+    --sheet: #121A2D;
+    --backdrop: rgba(2, 5, 12, .65);
+    --tabbar: rgba(10, 17, 32, .88);
+    --toast-bg: #F3EEE3;
+    --toast-fg: #0F1A2E;
+  }
+}
+
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; }
 body {
   font: 16px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   color: var(--text);
-  background:
-    radial-gradient(900px 500px at 0% -10%, rgba(34,211,238,.18), transparent 60%),
-    radial-gradient(800px 500px at 110% 10%, rgba(139,92,246,.22), transparent 60%),
-    var(--bg);
-  background-attachment: fixed;
+  background: var(--bg);
   min-height: 100vh;
   overscroll-behavior-y: none;
 }
 button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; padding: 0; }
-input, select, textarea { font: inherit; color: var(--text); }
+input, select { font: inherit; color: var(--text); }
 h1, h2, h3, p { margin: 0; }
 [hidden] { display: none !important; }
+svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: 0 0 auto; }
 
-/* Header */
+/* ---------- Header (always navy, like the front of a premium card) ---------- */
 .top {
   position: sticky; top: 0; z-index: 5;
   padding: calc(var(--safe-t) + 12px) 20px 12px;
   display: flex; align-items: center; gap: 12px;
-  background: linear-gradient(to bottom, rgba(10,15,31,.92), rgba(10,15,31,.75));
-  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
-  border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, var(--navy-2), var(--navy));
+  border-bottom: 1px solid rgba(217, 185, 112, .28);
+  color: var(--ivory);
 }
-.top img { width: 36px; height: 36px; border-radius: 10px; box-shadow: 0 4px 14px rgba(139,92,246,.4); }
-.brand { font-weight: 800; font-size: 21px; letter-spacing: -.02em; }
-.brand span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.tagline { font-size: 12px; color: var(--muted); margin-top: 1px; }
+.top img { width: 36px; height: 36px; border-radius: 9px; box-shadow: 0 0 0 1px rgba(217,185,112,.35); }
+.brand { font: 700 23px/1 var(--serif); letter-spacing: -.01em; }
+.brand em { font-style: normal; color: var(--pale-gold); }
+.tagline { font-size: 10.5px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: rgba(227, 199, 131, .8); margin-top: 4px; }
+.top .trip-pill {
+  margin-left: auto; font-size: 12px; font-weight: 700; color: var(--pale-gold);
+  border: 1px solid rgba(217,185,112,.4); border-radius: 99px; padding: 4px 4px 4px 10px; max-width: 46%;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.trip-pill span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.trip-pill b { flex: 0 0 auto; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 99px; background: var(--gold-fill); color: #0F1A2E; font-size: 11px; display: grid; place-items: center; }
 
-main { padding: 16px 16px calc(var(--tabbar) + var(--safe-b) + 28px); max-width: 640px; margin: 0 auto; }
+main { padding: 18px 16px calc(var(--tabh) + var(--safe-b) + 28px); max-width: 640px; margin: 0 auto; }
 .tab { display: none; animation: fade .25s ease; }
 .tab.active { display: block; }
 @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-.section-head { margin: 4px 4px 14px; }
-.section-head h2 { font-size: 28px; font-weight: 800; letter-spacing: -.03em; }
-.section-head p { color: var(--muted); font-size: 14px; margin-top: 2px; }
+.section-head { margin: 2px 4px 16px; }
+.section-head h2 { font: 700 30px/1.1 var(--serif); letter-spacing: -.02em; }
+.section-head p { color: var(--muted); font-size: 14px; margin-top: 4px; }
 .muted { color: var(--muted); }
-small.muted, .small { font-size: 13px; }
+.small { font-size: 13px; }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
 
 .card {
-  background: var(--card);
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 18px;
   margin-bottom: 14px;
+  box-shadow: var(--shadow);
 }
-.card h3 { font-size: 17px; font-weight: 700; margin-bottom: 12px; letter-spacing: -.01em; }
+.card h3 { font: 700 18px/1.2 var(--serif); margin-bottom: 12px; }
 .row-between { display: flex; justify-content: space-between; align-items: baseline; }
-.row-between h3 { margin-bottom: 12px; }
 
-/* Buttons */
+/* ---------- Buttons ---------- */
 .btn {
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  width: 100%; padding: 14px 18px; border-radius: 16px;
-  font-weight: 700; font-size: 16px; transition: transform .1s ease, opacity .2s;
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  width: 100%; padding: 15px 18px; border-radius: 14px;
+  font-weight: 700; font-size: 16px; letter-spacing: .01em; transition: transform .1s ease, opacity .2s;
 }
-.btn:active { transform: scale(.97); }
+.btn:active { transform: scale(.975); }
 .btn:disabled { opacity: .45; }
 .btn.big { padding: 17px 18px; font-size: 17px; }
-.btn.primary { background: var(--grad); color: #fff; box-shadow: 0 10px 30px -10px rgba(139,92,246,.7); }
-.btn.secondary { background: var(--card-hi); border: 1px solid var(--line); }
+.btn.primary { background: var(--btn-bg); color: var(--btn-fg); box-shadow: var(--btn-shadow); }
+.btn.secondary { background: var(--surface); border: 1px solid var(--line-strong); color: var(--text); }
 .btn.ghost { color: var(--muted); }
-.btn.danger { background: rgba(251,113,133,.12); color: var(--danger); border: 1px solid rgba(251,113,133,.25); }
-.btn svg { width: 20px; height: 20px; }
-.link { color: var(--a1); font-weight: 600; font-size: 15px; padding: 8px 4px; }
+.btn.danger { background: transparent; color: var(--danger); border: 1px solid currentColor; }
+.link { color: var(--gold); font-weight: 600; font-size: 15px; padding: 8px 4px; }
 .link.danger { color: var(--danger); }
 .row-center { display: flex; justify-content: center; align-items: center; gap: 6px; color: var(--muted); }
 .actions { display: grid; gap: 10px; margin-top: 4px; }
 
-/* Hero */
-.hero { text-align: center; padding: 34px 22px 24px; position: relative; overflow: hidden; }
-.hero::before {
-  content: ""; position: absolute; inset: -40% -20% auto; height: 260px;
-  background: radial-gradient(closest-side, rgba(139,92,246,.35), transparent);
-  pointer-events: none;
-}
-.hero-art { width: 120px; height: 120px; margin: 0 auto 18px; position: relative; }
-.hero-art img { width: 100%; height: 100%; border-radius: 30px; box-shadow: 0 18px 50px -12px rgba(34,211,238,.55); }
-.hero h2 { font-size: 26px; font-weight: 800; letter-spacing: -.03em; position: relative; }
-.hero p { color: var(--muted); margin: 6px auto 22px; max-width: 280px; position: relative; }
-.hero .btn { position: relative; }
+/* ---------- Hero ---------- */
+.hero { text-align: center; padding: 26px 22px 22px; overflow: hidden; }
+.hero-art { width: 100%; max-width: 300px; margin: 0 auto 14px; display: block; filter: drop-shadow(0 14px 22px rgba(15,26,46,.18)); }
+.hero h2 { font: 700 28px/1.15 var(--serif); letter-spacing: -.02em; }
+.hero p { color: var(--muted); margin: 8px auto 22px; max-width: 290px; }
 .hero .btn + .btn { margin-top: 8px; }
-.steps { display: flex; justify-content: center; gap: 18px; margin-top: 18px; font-size: 13px; color: var(--muted); }
-.steps b { color: var(--text); }
+.steps { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 18px; }
+.steps span { font: 600 15px var(--serif); }
+.steps i { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); }
 
 .install {
   display: flex; gap: 12px; align-items: center;
-  background: linear-gradient(135deg, rgba(34,211,238,.12), rgba(139,92,246,.14));
-  border: 1px solid rgba(139,92,246,.3); border-radius: 16px; padding: 12px 14px; margin-bottom: 14px; font-size: 14px;
+  background: var(--surface); border: 1px solid var(--line-strong);
+  border-left: 3px solid var(--gold); border-radius: 14px; padding: 12px 14px; margin-bottom: 14px; font-size: 14px;
 }
 .install .x { margin-left: auto; color: var(--muted); font-size: 22px; padding: 0 4px; }
 
-/* Pages strip */
+/* ---------- Pages strip ---------- */
 .pages { display: flex; gap: 12px; overflow-x: auto; padding: 2px 2px 8px; scroll-snap-type: x mandatory; }
 .page {
-  flex: 0 0 auto; width: 132px; height: 176px; border-radius: 14px; overflow: hidden; position: relative;
-  background: #fff1; border: 1px solid var(--line); scroll-snap-align: start;
+  flex: 0 0 auto; width: 132px; height: 176px; border-radius: 12px; overflow: hidden; position: relative;
+  background: var(--input); border: 1px solid var(--line); scroll-snap-align: start;
 }
 .page img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.page .num { position: absolute; left: 8px; top: 8px; background: rgba(0,0,0,.6); font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 99px; }
-.page .tools { position: absolute; right: 6px; bottom: 6px; display: flex; gap: 6px; }
+.page .num { position: absolute; left: 8px; top: 8px; background: rgba(15,26,46,.8); color: var(--pale-gold); font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 99px; }
+.page .tools { position: absolute; right: 6px; bottom: 6px; }
 .page .tools button, .page .del {
-  width: 34px; height: 34px; border-radius: 50%; background: rgba(10,15,31,.75);
-  display: grid; place-items: center; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  width: 34px; height: 34px; border-radius: 50%; background: rgba(15,26,46,.8); color: #fff;
+  display: grid; place-items: center;
 }
 .page .del { position: absolute; right: 6px; top: 6px; width: 30px; height: 30px; }
-.page svg { width: 18px; height: 18px; }
-.page .busy { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(10,15,31,.55); }
-.spinner { width: 28px; height: 28px; border-radius: 50%; border: 3px solid rgba(255,255,255,.2); border-top-color: var(--a1); animation: spin .8s linear infinite; }
+.page svg.i { width: 17px; height: 17px; stroke-width: 2.2; }
+.page .busy { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(15,26,46,.45); }
+.spinner { width: 28px; height: 28px; border-radius: 50%; border: 3px solid rgba(255,255,255,.3); border-top-color: var(--pale-gold); animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .add-page {
-  flex: 0 0 auto; width: 132px; height: 176px; border-radius: 14px; border: 1.5px dashed rgba(255,255,255,.22);
-  display: flex; flex-direction: column; align-items: stretch; justify-content: center; gap: 8px; padding: 10px;
+  flex: 0 0 auto; width: 132px; height: 176px; border-radius: 12px; border: 1.5px dashed var(--line-strong);
+  display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 10px;
 }
-.add-page .lbl { text-align: center; font-size: 13px; color: var(--muted); font-weight: 600; }
-.add-page button { background: var(--card-hi); border-radius: 10px; padding: 9px 4px; font-size: 13px; font-weight: 700; }
+.add-page .lbl { text-align: center; font-size: 12px; color: var(--muted); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.add-page button { display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--input); border: 1px solid var(--line); border-radius: 10px; padding: 9px 4px; font-size: 13px; font-weight: 700; }
+.add-page svg.i { width: 16px; height: 16px; }
 
-/* Switch row */
+/* ---------- Switch ---------- */
 .switch-row { display: flex; align-items: center; gap: 12px; padding-top: 12px; margin-top: 6px; border-top: 1px solid var(--line); cursor: pointer; }
 .form label.switch-row { display: flex; font-size: 16px; color: var(--text); margin-left: 0; }
 .switch-row > span { flex: 1; font-weight: 600; }
 .switch-row small { display: block; color: var(--muted); font-weight: 400; font-size: 13px; }
 .switch-row input { display: none; }
-.switch { width: 50px; height: 30px; border-radius: 99px; background: rgba(255,255,255,.16); position: relative; transition: background .2s; flex: 0 0 auto; }
-.switch::after { content: ""; position: absolute; left: 3px; top: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 2px 6px rgba(0,0,0,.3); }
-.switch-row input:checked + .switch { background: var(--grad); }
+.switch { width: 50px; height: 30px; border-radius: 99px; background: var(--line-strong); position: relative; transition: background .2s; flex: 0 0 auto; }
+.switch::after { content: ""; position: absolute; left: 3px; top: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 2px 6px rgba(0,0,0,.25); }
+.switch-row input:checked + .switch { background: var(--gold-fill); }
 .switch-row input:checked + .switch::after { transform: translateX(20px); }
 
-/* Forms */
-.form label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin: 0 0 6px 2px; }
+/* ---------- Forms ---------- */
+.form label { display: block; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 7px 2px; }
 .form .field { margin-bottom: 14px; }
-.input, .form input:not([type=checkbox]), .form select, .form textarea {
-  width: 100%; padding: 13px 14px; border-radius: 13px; font-size: 16px;
-  background: rgba(255,255,255,.06); border: 1px solid var(--line); outline: none;
-  transition: border-color .15s, background .15s; -webkit-appearance: none; appearance: none;
+.form input:not([type=checkbox]), .form select {
+  width: 100%; padding: 13px 14px; border-radius: 12px; font-size: 16px;
+  background: var(--input); border: 1px solid var(--line-strong); outline: none;
+  transition: border-color .15s, box-shadow .15s; -webkit-appearance: none; appearance: none;
 }
-.form input:focus, .form select:focus, .input:focus { border-color: rgba(34,211,238,.6); background: rgba(255,255,255,.09); }
+.form input:focus, .form select:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(194, 154, 69, .18); }
 .form select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 20px) 55%, calc(100% - 14px) 55%; background-size: 6px 6px; background-repeat: no-repeat; padding-right: 36px; }
 .form input[type=date] { min-height: 49px; }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -185,143 +224,225 @@ small.muted, .small { font-size: 13px; }
 
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip {
+  display: inline-flex; align-items: center; gap: 6px;
   padding: 8px 12px; border-radius: 99px; font-size: 14px; font-weight: 600;
-  background: rgba(255,255,255,.06); border: 1px solid var(--line); color: var(--muted);
+  background: var(--input); border: 1px solid var(--line-strong); color: var(--muted);
 }
-.chip.on { background: var(--grad); color: #fff; border-color: transparent; }
+.chip svg.i { width: 16px; height: 16px; }
+.chip.on { background: var(--btn-bg); color: var(--btn-fg); border-color: transparent; }
 
 .filename {
-  margin-top: 16px; padding: 12px 14px; border-radius: 13px;
-  background: rgba(0,0,0,.25); border: 1px dashed var(--line);
+  margin-top: 16px; padding: 12px 14px; border-radius: 12px;
+  background: var(--input); border: 1px dashed var(--line-strong);
   display: flex; flex-direction: column; gap: 4px;
 }
-.filename span { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
-.filename code { font: 600 14px/1.35 ui-monospace, "SF Mono", Menlo, monospace; color: var(--a1); word-break: break-all; }
+.filename span { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .12em; }
+.filename code { font: 600 14px/1.35 ui-monospace, "SF Mono", Menlo, monospace; color: var(--gold); word-break: break-all; }
 
-/* Lists */
-.list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
-.item {
-  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
-  background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 10px 12px 10px 10px;
+/* ---------- Ticket cards (receipts) ---------- */
+.list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.ticket {
+  --stub: 104px;
+  position: relative; display: grid; grid-template-columns: minmax(0, 1fr) var(--stub);
+  background: var(--surface); border-radius: 14px; box-shadow: var(--shadow);
+  border: 1px solid var(--line); text-align: left; width: 100%;
 }
-.item:active { background: var(--card-hi); }
-.thumb { width: 50px; height: 62px; border-radius: 9px; object-fit: cover; background: #fff2; flex: 0 0 auto; }
-.meta { flex: 1; min-width: 0; }
-.meta .t { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.meta .s { font-size: 13px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.amt { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
-.badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 99px; margin-top: 4px; }
-.badge.sent { background: rgba(52,211,153,.14); color: var(--ok); }
-.badge.batch { background: rgba(139,92,246,.18); color: #c4b5fd; }
-.rm { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; color: var(--muted); background: rgba(255,255,255,.06); flex: 0 0 auto; }
-.rm svg { width: 16px; height: 16px; }
-.month { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin: 18px 6px 8px; }
-.month:first-child { margin-top: 4px; }
+.ticket::before, .ticket::after {
+  content: ""; position: absolute; right: calc(var(--stub) - 9px); width: 18px; height: 18px; border-radius: 50%;
+  background: var(--bg);
+}
+.ticket::before { top: -10px; box-shadow: inset 0 -1px 0 var(--line); }
+.ticket::after { bottom: -10px; box-shadow: inset 0 1px 0 var(--line); }
+.ticket:active { transform: scale(.99); }
+.t-main { display: flex; align-items: center; gap: 12px; padding: 12px; min-width: 0; }
+.thumb { width: 46px; height: 58px; border-radius: 7px; object-fit: cover; background: var(--input); flex: 0 0 auto; border: 1px solid var(--line); }
+.meta { min-width: 0; }
+.meta .t { font: 700 17px/1.2 var(--serif); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.meta .s { display: flex; align-items: center; gap: 5px; font-size: 13px; color: var(--muted); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.meta .s svg.i { width: 14px; height: 14px; }
+.badges { display: flex; gap: 5px; margin-top: 6px; flex-wrap: wrap; }
+.badge { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 2px 7px; border-radius: 99px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.badge.sent { background: var(--ok-bg); color: var(--ok); }
+.badge.trip { border: 1px solid var(--gold); color: var(--gold); }
+.t-stub {
+  border-left: 2px dashed var(--line-strong); margin: 10px 0; padding: 0 10px;
+  display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; position: relative;
+}
+.t-stub .amt { font: 700 17px/1.1 var(--serif); font-variant-numeric: tabular-nums; color: var(--text); }
+.t-stub .lbl { font-size: 10px; font-weight: 700; letter-spacing: .14em; color: var(--muted); text-transform: uppercase; margin-bottom: 3px; }
+.t-stub .rm { margin-top: 8px; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: var(--muted); background: var(--input); border: 1px solid var(--line); }
+.t-stub .rm svg.i { width: 14px; height: 14px; stroke-width: 2.4; }
+.month { font-size: 11px; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: .16em; margin: 22px 6px 10px; }
+.month:first-child { margin-top: 6px; }
 
-.summary { display: flex; justify-content: space-around; text-align: center; padding: 16px; }
-.summary .n { font-size: 26px; font-weight: 800; letter-spacing: -.02em; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.summary .l { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+/* ---------- Trip pass (boarding-pass header) ---------- */
+.pass {
+  --stub: 112px;
+  position: relative; display: grid; grid-template-columns: minmax(0, 1fr) var(--stub);
+  background: linear-gradient(135deg, var(--navy-2), var(--navy)); color: var(--ivory);
+  border-radius: 20px; margin-bottom: 18px; box-shadow: 0 18px 40px -20px rgba(15,26,46,.7);
+  border: 1px solid rgba(217,185,112,.3);
+}
+.pass::before, .pass::after {
+  content: ""; position: absolute; right: calc(var(--stub) - 11px); width: 22px; height: 22px; border-radius: 50%; background: var(--bg);
+}
+.pass::before { top: -11px; }
+.pass::after { bottom: -11px; }
+.pass-main { padding: 18px 16px 16px 18px; min-width: 0; }
+.pass .eyebrow { color: var(--pale-gold); }
+.pass-name {
+  display: block; width: 100%; margin: 6px 0 14px; padding: 0 0 6px; border: 0; border-bottom: 1px solid rgba(227,199,131,.35);
+  background: transparent; color: var(--ivory); font: 700 20px/1.2 var(--serif); outline: none; border-radius: 0; text-overflow: ellipsis;
+}
+.pass-name::placeholder { color: rgba(245,241,232,.4); }
+.pass-name:focus { border-bottom-color: var(--pale-gold); }
+.pass-row { display: flex; gap: 18px; }
+.pass-row span, .pass-stub span { display: block; font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: rgba(227,199,131,.75); }
+.pass-row b { font-size: 14px; font-weight: 600; white-space: nowrap; }
+.pass-stub {
+  border-left: 2px dashed rgba(227,199,131,.35); margin: 14px 0; padding: 0 8px;
+  display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+}
+.pass-stub b { font: 700 19px/1.15 var(--serif); color: var(--pale-gold); margin-top: 4px; word-break: break-all; }
 
-.empty { text-align: center; padding: 44px 24px; color: var(--muted); }
-.empty .ico { font-size: 44px; margin-bottom: 10px; }
-.empty b { color: var(--text); display: block; font-size: 18px; margin-bottom: 4px; }
+.empty { text-align: center; padding: 30px 24px; color: var(--muted); }
+.empty .ico { width: 54px; height: 54px; margin: 0 auto 12px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--gold); color: var(--gold); }
+.empty .ico svg.i { width: 24px; height: 24px; }
+.empty b { color: var(--text); display: block; font: 700 19px var(--serif); margin-bottom: 4px; }
 
-.search { width: 100%; margin-bottom: 8px; }
-
+.search { width: 100%; margin-bottom: 4px; }
 .email-slot { display: grid; grid-template-columns: 34% 1fr; gap: 8px; margin-bottom: 10px; }
 
-/* Tab bar */
+/* ---------- Tab bar ---------- */
 .tabbar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
   display: grid; grid-template-columns: repeat(4, 1fr);
   padding: 6px 8px calc(var(--safe-b) + 6px);
-  background: rgba(12,17,36,.82); backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  background: var(--tabbar); backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4);
   border-top: 1px solid var(--line);
 }
 .tabbar button { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; color: var(--muted); font-size: 11px; font-weight: 600; position: relative; }
-.tabbar svg { width: 25px; height: 25px; }
-.tabbar button.active { color: var(--text); }
-.tabbar button.active svg { stroke: url(#tabgrad); }
+.tabbar svg.i { width: 25px; height: 25px; stroke-width: 1.7; }
+.tabbar button.active { color: var(--gold); }
+.tabbar button.bump svg { animation: bump .5s cubic-bezier(.3,1.6,.5,1); }
+@keyframes bump { 40% { transform: scale(1.3) translateY(-3px); } }
 .tabbar .count {
-  position: absolute; top: 0; left: calc(50% + 6px); min-width: 18px; height: 18px; padding: 0 5px;
-  border-radius: 99px; background: var(--danger); color: #fff; font-size: 11px; font-weight: 800; display: grid; place-items: center;
+  position: absolute; top: 1px; left: calc(50% + 6px); min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: 99px; background: var(--gold-fill); color: #0F1A2E; font-size: 11px; font-weight: 800; display: grid; place-items: center;
 }
 
-/* Bottom sheet */
+/* ---------- Bottom sheet ---------- */
 .sheet-wrap { position: fixed; inset: 0; z-index: 50; display: none; }
 .sheet-wrap.open { display: block; }
-.backdrop { position: absolute; inset: 0; background: rgba(3,6,15,.6); animation: fadeIn .2s ease; }
+.backdrop { position: absolute; inset: 0; background: var(--backdrop); animation: fadeIn .2s ease; }
 @keyframes fadeIn { from { opacity: 0; } }
 .sheet {
   position: absolute; left: 0; right: 0; bottom: 0; max-height: 92vh; overflow-y: auto;
   max-width: 640px; margin: 0 auto;
-  background: linear-gradient(to bottom, #182148, #10173a);
-  border: 1px solid var(--line); border-bottom: 0; border-radius: 26px 26px 0 0;
+  background: linear-gradient(90deg, #EAD196, #C29A45) top / 100% 3px no-repeat, var(--sheet);
+  border-radius: 24px 24px 0 0;
   padding: 10px 18px calc(var(--safe-b) + 20px);
-  animation: up .28s cubic-bezier(.2,.9,.3,1);
+  animation: up .3s cubic-bezier(.2,.9,.3,1);
 }
 @keyframes up { from { transform: translateY(100%); } }
-.grabber { width: 40px; height: 5px; border-radius: 9px; background: rgba(255,255,255,.25); margin: 0 auto 12px; }
-.sheet h2 { font-size: 22px; font-weight: 800; letter-spacing: -.02em; }
-.sheet .sub { color: var(--muted); font-size: 14px; margin: 4px 0 16px; }
-.sheet .close { position: absolute; right: 14px; top: 14px; width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,.08); display: grid; place-items: center; color: var(--muted); }
-.sheet .close svg { width: 16px; height: 16px; }
-.filelist { background: rgba(0,0,0,.22); border-radius: 13px; padding: 10px 12px; margin-bottom: 16px; max-height: 150px; overflow-y: auto; }
-.filelist div { font: 600 13px/1.6 ui-monospace, "SF Mono", Menlo, monospace; color: var(--a1); word-break: break-all; }
+.grabber { width: 40px; height: 5px; border-radius: 9px; background: var(--line-strong); margin: 0 auto 12px; }
+.sheet h2 { font: 700 24px/1.15 var(--serif); letter-spacing: -.01em; padding-right: 40px; }
+.sheet .sub { color: var(--muted); font-size: 14px; margin: 5px 0 16px; }
+.sheet .close { position: absolute; right: 14px; top: 16px; width: 32px; height: 32px; border-radius: 50%; background: var(--input); border: 1px solid var(--line); display: grid; place-items: center; color: var(--muted); }
+.sheet .close svg.i { width: 16px; height: 16px; stroke-width: 2.4; }
+.filelist { background: var(--input); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 16px; max-height: 150px; overflow-y: auto; }
+.filelist div { font: 600 13px/1.6 ui-monospace, "SF Mono", Menlo, monospace; color: var(--gold); word-break: break-all; }
 .howto { counter-reset: s; list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 8px; }
 .howto li { counter-increment: s; display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--muted); }
-.howto li::before { content: counter(s); flex: 0 0 22px; height: 22px; border-radius: 50%; background: rgba(139,92,246,.25); color: #ddd6fe; font-size: 12px; font-weight: 800; display: grid; place-items: center; }
+.howto li::before { content: counter(s); flex: 0 0 22px; height: 22px; border-radius: 50%; border: 1px solid var(--gold); color: var(--gold); font-size: 12px; font-weight: 800; display: grid; place-items: center; }
 .howto b { color: var(--text); }
 .detail-pages { display: flex; gap: 10px; overflow-x: auto; margin: 4px 0 16px; }
-.detail-pages img { height: 260px; border-radius: 12px; border: 1px solid var(--line); background: #fff; }
-.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 14px; margin: 10px 0 16px; }
-.kv dt { color: var(--muted); }
-.kv dd { margin: 0; text-align: right; word-break: break-all; }
+.detail-pages img { height: 260px; border-radius: 10px; border: 1px solid var(--line); background: #fff; }
 
-/* Toast */
+/* ---------- Toast, flash, done ---------- */
 #toast {
-  position: fixed; left: 50%; bottom: calc(var(--tabbar) + var(--safe-b) + 18px); z-index: 60;
+  position: fixed; left: 50%; bottom: calc(var(--tabh) + var(--safe-b) + 18px); z-index: 80;
   transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
-  background: #f1f3ff; color: #101632; font-weight: 700; font-size: 15px;
-  padding: 12px 18px; border-radius: 14px; box-shadow: 0 12px 30px rgba(0,0,0,.4);
+  background: var(--toast-bg); color: var(--toast-fg); font-weight: 700; font-size: 15px;
+  padding: 12px 18px; border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,.3);
+  border-left: 3px solid #D9B970;
   transition: all .25s ease; max-width: calc(100% - 32px); text-align: center;
 }
 #toast.show { transform: translate(-50%, 0); opacity: 1; }
+.flash { position: fixed; inset: 0; background: #fff; z-index: 90; pointer-events: none; animation: flash .45s ease-out forwards; }
+@keyframes flash { 0% { opacity: 0; } 15% { opacity: .9; } 100% { opacity: 0; } }
+.done {
+  position: fixed; inset: 0; z-index: 85; display: grid; place-items: center; pointer-events: none;
+  background: var(--backdrop); animation: doneOut 1.9s ease forwards;
+}
+.done-card { background: var(--sheet); border-radius: 24px; padding: 28px 40px 24px; text-align: center; box-shadow: 0 30px 60px -20px rgba(0,0,0,.5); animation: pop .4s cubic-bezier(.3,1.4,.5,1); }
+.done svg { width: 74px; height: 74px; }
+.done circle { fill: none; stroke: url(#goldgrad); stroke-width: 3; stroke-dasharray: 151; stroke-dashoffset: 151; animation: draw .5s ease-out .1s forwards; transform: rotate(-90deg); transform-origin: center; }
+.done path { fill: none; stroke: url(#goldgrad); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 40; stroke-dashoffset: 40; animation: draw .35s ease-out .5s forwards; }
+.done-t { font: 700 30px/1 var(--serif); margin-top: 12px; }
+.done-s { font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin-top: 8px; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes pop { from { transform: scale(.85); opacity: 0; } }
+@keyframes doneOut { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition: none !important; }
+}
 </style>
 </head>
 <body>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs><linearGradient id="tabgrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
+  <defs>
+    <linearGradient id="goldgrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EAD196"/><stop offset="1" stop-color="#C29A45"/></linearGradient>
+    <path id="tk" d="M12 0H141a9 9 0 0 0 18 0H188a12 12 0 0 1 12 12V88a12 12 0 0 1-12 12H159a9 9 0 0 0-18 0H12A12 12 0 0 1 0 88V12A12 12 0 0 1 12 0Z"/>
+  </defs>
 </svg>
 
 <header class="top">
   <img src="icons/icon-192.png" alt="">
   <div>
-    <div class="brand">Snap<span>Stub</span></div>
-    <div class="tagline">Snap it. Name it. Send it.</div>
+    <div class="brand">Xpense<em>It</em></div>
+    <div class="tagline">Snap. Filed. Done.</div>
   </div>
+  <button class="trip-pill" id="tripPill" data-tab="trip" hidden></button>
 </header>
 
 <main>
   <!-- CAPTURE -->
   <section class="tab active" id="tab-capture">
     <div class="install" id="installHint" hidden>
-      <span style="font-size:22px">📲</span>
-      <div><b>Install SnapStub:</b> tap <b>Share</b> then <b>Add to Home Screen</b>.</div>
+      <svg class="i" viewBox="0 0 24 24" style="color:var(--gold)"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
+      <div><b>Install XpenseIt:</b> tap <b>Share</b> then <b>Add to Home Screen</b>.</div>
       <button class="x" data-act="hideInstall" aria-label="Dismiss">×</button>
     </div>
 
     <div class="card hero" id="capEmpty">
-      <div class="hero-art"><img src="icons/icon-512.png" alt=""></div>
-      <h2>Snap a receipt</h2>
-      <p>It becomes a neatly named PDF, ready for your expense report.</p>
+      <svg class="hero-art" viewBox="0 0 280 175" aria-hidden="true">
+        <g transform="translate(40 30) rotate(-10 100 50)"><use href="#tk" fill="#FFFDF8" stroke="rgba(15,26,46,.12)"/><rect x="16" y="22" width="70" height="8" rx="4" fill="#E2DCCD"/><rect x="16" y="40" width="100" height="6" rx="3" fill="#EEE9DD"/></g>
+        <g transform="translate(40 32) rotate(5 100 50)"><use href="#tk" fill="#FFFDF8" stroke="rgba(15,26,46,.12)"/><rect x="16" y="22" width="80" height="8" rx="4" fill="#E2DCCD"/><rect x="16" y="40" width="60" height="6" rx="3" fill="#EEE9DD"/></g>
+        <g transform="translate(40 52)">
+          <use href="#tk" fill="#FFFDF8" stroke="rgba(15,26,46,.14)"/>
+          <text x="16" y="20" font-family="-apple-system, sans-serif" font-size="7.5" font-weight="700" letter-spacing="1.4" fill="#8C6A22">AIRFARE</text>
+          <text x="16" y="42" font-family="ui-serif, 'New York', Georgia, serif" font-size="19" font-weight="700" fill="#0F1A2E">Delta</text>
+          <text x="16" y="57" font-family="-apple-system, sans-serif" font-size="8.5" fill="#687083">ATL → ORD · Oct 14</text>
+          <rect x="16" y="70" width="64" height="5" rx="2.5" fill="#EEE9DD"/>
+          <rect x="16" y="80" width="44" height="5" rx="2.5" fill="#EEE9DD"/>
+          <line x1="150" y1="12" x2="150" y2="88" stroke="#D8D1C1" stroke-width="1.6" stroke-dasharray="4 4"/>
+          <text x="175" y="44" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="7" font-weight="700" letter-spacing="1.2" fill="#687083">TOTAL</text>
+          <text x="175" y="62" text-anchor="middle" font-family="ui-serif, 'New York', Georgia, serif" font-size="15" font-weight="700" fill="#8C6A22">$412</text>
+          <circle cx="196" cy="4" r="14" fill="url(#goldgrad)"/>
+          <path d="M189.5 4.5l4.5 4.5 8-8.5" fill="none" stroke="#0F1A2E" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+      </svg>
+      <h2>Got a receipt?</h2>
+      <p>Snap it, and it's filed as a neatly named PDF, ready for your expense report.</p>
       <button class="btn primary big" data-act="camera">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        Take Photo
+        <svg class="i" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg>
+        Snap Receipt
       </button>
       <button class="btn ghost" data-act="library">Choose from Photos</button>
-      <div class="steps"><span><b>1</b> Snap</span><span><b>2</b> Name</span><span><b>3</b> Send</span></div>
+      <div class="steps"><span>Snap</span><i></i><span>Filed</span><i></i><span>Done</span></div>
     </div>
 
     <div id="capEdit" hidden>
@@ -329,7 +450,7 @@ small.muted, .small { font-size: 13px; }
         <div class="row-between"><h3>Pages</h3><span class="muted small" id="pageCount"></span></div>
         <div class="pages" id="pages"></div>
         <label class="switch-row">
-          <span>✨ Clean up image<small>Black &amp; white with sharper text</small></span>
+          <span>Clean up image<small>Black &amp; white with sharper text</small></span>
           <input type="checkbox" id="enhance"><i class="switch"></i>
         </label>
       </div>
@@ -342,18 +463,18 @@ small.muted, .small { font-size: 13px; }
         </div>
         <div class="field"><label for="fVendor">Vendor</label><input id="fVendor" placeholder="e.g. Delta, Marriott, Chipotle" autocapitalize="words" autocomplete="off"></div>
         <div class="field"><label>Category</label><div class="chips" id="fCats"></div></div>
-        <div class="field" style="margin-bottom:0"><label for="fNote">Note <span style="font-weight:400">(optional)</span></label><input id="fNote" placeholder="e.g. Client dinner with ACME" autocomplete="off"></div>
+        <div class="field" style="margin-bottom:0"><label for="fNote">Note <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label><input id="fNote" placeholder="e.g. Client dinner with ACME" autocomplete="off"></div>
         <div class="filename"><span>File name</span><code id="fName"></code></div>
       </div>
 
       <div class="actions">
         <button class="btn primary big" data-act="emailNow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>
+          <svg class="i" viewBox="0 0 24 24"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>
           Email now
         </button>
         <button class="btn secondary big" data-act="addBatch">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-          Add to batch
+          <svg class="i" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+          <span id="addTripLabel">Add to trip</span>
         </button>
         <div class="row-center">
           <button class="link" data-act="saveOnly">Save to history only</button>·<button class="link danger" data-act="discard">Discard</button>
@@ -362,39 +483,46 @@ small.muted, .small { font-size: 13px; }
     </div>
   </section>
 
-  <!-- BATCH -->
-  <section class="tab" id="tab-batch">
-    <div class="section-head"><h2>Batch</h2><p>Collect receipts during a trip, then send them all at once.</p></div>
-    <div id="batchFull">
-      <div class="card summary">
-        <div><div class="n" id="bCount">0</div><div class="l">Receipts</div></div>
-        <div><div class="n" id="bTotal">$0.00</div><div class="l">Total</div></div>
+  <!-- TRIP -->
+  <section class="tab" id="tab-trip">
+    <div class="section-head"><h2>Trip</h2><p>Collect receipts while you travel, then send them all at once.</p></div>
+    <div class="pass">
+      <div class="pass-main">
+        <div class="eyebrow">Current trip</div>
+        <input class="pass-name" id="tripName" placeholder="Name this trip" autocapitalize="words" autocomplete="off" enterkeyhint="done">
+        <div class="pass-row">
+          <div><span>Dates</span><b id="tDates">—</b></div>
+          <div><span>Receipts</span><b id="tCount">0</b></div>
+        </div>
       </div>
-      <div class="list" id="batchList"></div>
-      <div class="actions" style="margin-top:16px">
+      <div class="pass-stub"><span>Total</span><b id="tTotal">$0.00</b></div>
+    </div>
+    <div id="tripFull">
+      <div class="list" id="tripList"></div>
+      <div class="actions" style="margin-top:18px">
         <button class="btn primary big" data-act="sendBatch">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>
-          Email batch
+          <svg class="i" viewBox="0 0 24 24"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>
+          Send trip
         </button>
-        <div class="row-center"><button class="link danger" data-act="clearBatch">Empty batch</button></div>
+        <div class="row-center"><button class="link danger" data-act="clearBatch">End trip without sending</button></div>
       </div>
     </div>
-    <div class="empty" id="batchEmpty">
-      <div class="ico">🧳</div>
-      <b>Your batch is empty</b>
-      Tap <b style="display:inline;font-size:inherit">Add to batch</b> after snapping a receipt to save it here for later.
+    <div class="empty" id="tripEmpty">
+      <div class="ico"><svg class="i" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div>
+      <b>No receipts on this trip yet</b>
+      Name your trip above, then tap <b style="display:inline;font:inherit;font-weight:700">Add to trip</b> after snapping each receipt.
     </div>
   </section>
 
   <!-- HISTORY -->
   <section class="tab" id="tab-history">
-    <div class="section-head"><h2>History</h2><p id="hSub">Every receipt you've captured.</p></div>
-    <div class="form"><input type="search" class="search" id="hSearch" placeholder="Search vendor, category, note, amount…"></div>
+    <div class="section-head"><h2>History</h2><p id="hSub">Every receipt you've filed.</p></div>
+    <div class="form"><input type="search" class="search" id="hSearch" placeholder="Search vendor, trip, category, amount…"></div>
     <div id="histList"></div>
     <div class="empty" id="histEmpty" hidden>
-      <div class="ico">🗂️</div>
+      <div class="ico"><svg class="i" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></div>
       <b>No receipts yet</b>
-      Receipts you capture will show up here.
+      Receipts you capture will be filed here.
     </div>
   </section>
 
@@ -415,7 +543,7 @@ small.muted, .small { font-size: 13px; }
         <select id="sCat"></select>
       </div>
       <label class="switch-row" style="margin-top:14px">
-        <span>✨ Clean up images by default<small>Black &amp; white with sharper text</small></span>
+        <span>Clean up images by default<small>Black &amp; white with sharper text</small></span>
         <input type="checkbox" id="sEnhance"><i class="switch"></i>
       </label>
     </div>
@@ -435,26 +563,26 @@ small.muted, .small { font-size: 13px; }
       </ol>
     </div>
 
-    <p class="muted small" style="text-align:center;margin-top:8px">SnapStub v1.0 · Your receipts stay on this phone.</p>
+    <p class="muted small" style="text-align:center;margin-top:8px">XpenseIt v2.0 · Your receipts stay on this phone.</p>
   </section>
 </main>
 
 <nav class="tabbar">
   <button data-tab="capture" class="active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    <svg class="i" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg>
     Capture
   </button>
-  <button data-tab="batch">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-    Batch
-    <span class="count" id="batchCount" hidden>0</span>
+  <button data-tab="trip">
+    <svg class="i" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+    Trip
+    <span class="count" id="tripCount" hidden>0</span>
   </button>
   <button data-tab="history">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+    <svg class="i" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>
     History
   </button>
   <button data-tab="settings">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    <svg class="i" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
     Settings
   </button>
 </nav>
@@ -463,7 +591,7 @@ small.muted, .small { font-size: 13px; }
   <div class="backdrop" data-act="closeSheet"></div>
   <div class="sheet" role="dialog" aria-modal="true">
     <div class="grabber"></div>
-    <button class="close" data-act="closeSheet" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <button class="close" data-act="closeSheet" aria-label="Close"><svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     <div id="sheetBody"></div>
   </div>
 </div>
@@ -479,26 +607,52 @@ small.muted, .small { font-size: 13px; }
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const CATEGORIES = ['Airfare', 'Lodging', 'Meals', 'Ground Transport', 'Rental Car', 'Fuel', 'Parking & Tolls', 'Supplies', 'Entertainment', 'Other'];
-const CAT_EMOJI = { 'Airfare': '✈️', 'Lodging': '🏨', 'Meals': '🍽️', 'Ground Transport': '🚕', 'Rental Car': '🚗', 'Fuel': '⛽', 'Parking & Tolls': '🅿️', 'Supplies': '📎', 'Entertainment': '🎟️', 'Other': '🧾' };
+const CAT_PATHS = {
+  'Airfare': '<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>',
+  'Lodging': '<path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/>',
+  'Meals': '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>',
+  'Ground Transport': '<path d="M8 6v6M15 6v6M2 12h19.6M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2s-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3M9 18h5"/><circle cx="7" cy="18" r="2"/><circle cx="16" cy="18" r="2"/>',
+  'Rental Car': '<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2M9 17h6"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>',
+  'Fuel': '<path d="M3 22h12M4 9h10M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0V9.8a2 2 0 0 0-.6-1.4L18 5"/>',
+  'Parking & Tolls': '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/>',
+  'Supplies': '<path d="m21.4 11-9.2 9.2a6 6 0 0 1-8.5-8.5l8.6-8.6a4 4 0 0 1 5.7 5.7l-8.6 8.6a2 2 0 0 1-2.8-2.8l8.5-8.5"/>',
+  'Entertainment': '<path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2zM13 5v2M13 17v2M13 11v2"/>',
+  'Other': '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1zM16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8M12 17.5v-11"/>'
+};
+const catIcon = c => `<svg class="i" viewBox="0 0 24 24">${CAT_PATHS[c] || CAT_PATHS.Other}</svg>`;
 const EMAIL_RE = /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/;
-const ICON_X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>';
-const ICON_ROT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>';
+const ICON_X = '<svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+const ICON_ROT = '<svg class="i" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>';
+const ICON_CAM = '<svg class="i" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg>';
+const ICON_PHOTO = '<svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const pad = n => String(n).padStart(2, '0');
 const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
 const isoToDate = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
 const fmtDate = iso => iso ? isoToDate(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+const fmtShort = iso => iso ? isoToDate(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
 const parseAmount = s => { const n = parseFloat(String(s).replace(/[^0-9.]/g, '')); return isFinite(n) ? Math.round(n * 100) / 100 : null; };
 const fmtMoney = n => n == null ? '' : n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 const slug = s => String(s || '').normalize('NFKD').replace(/[^A-Za-z0-9\s.-]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-').slice(0, 40);
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
 const sum = recs => recs.reduce((t, r) => t + (r.amount || 0), 0);
+const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function fileNameFor({ date, vendor, category, amount }) {
   const parts = [date || todayISO(), slug(vendor) || 'Receipt', slug(category)];
   if (amount != null) parts.push(amount.toFixed(2));
   return parts.filter(Boolean).join('_') + '.pdf';
+}
+
+function dateRange(recs) {
+  const d = recs.map(r => r.date).sort();
+  if (!d.length) return '—';
+  const a = d[0], b = d[d.length - 1];
+  if (a === b) return fmtShort(a);
+  const [ay, am] = a.split('-'), [by, bm] = b.split('-');
+  if (ay === by && am === bm) return `${fmtShort(a)}–${Number(b.split('-')[2])}`;
+  return `${fmtShort(a)} – ${fmtShort(b)}`;
 }
 
 let toastTimer;
@@ -518,15 +672,70 @@ function flagInvalid(el) {
   setTimeout(() => el.classList.remove('invalid'), 1500);
 }
 
+/* ---------- Motion ---------- */
+function shutterFlash() {
+  if (reduceMotion()) return;
+  const f = document.createElement('div');
+  f.className = 'flash';
+  document.body.appendChild(f);
+  setTimeout(() => f.remove(), 500);
+}
+
+function bumpTab(tab) {
+  const btn = $(`.tabbar [data-tab="${tab}"]`);
+  btn.classList.remove('bump');
+  void btn.offsetWidth;
+  btn.classList.add('bump');
+}
+
+// The receipt thumbnail flies down into the Trip or History tab, like dropping it into a folder.
+function fileInto(tab, fromEl) {
+  const img = $('#pages .page img');
+  const btn = $(`.tabbar [data-tab="${tab}"]`);
+  if (!img || reduceMotion()) { bumpTab(tab); return; }
+  let a = img.getBoundingClientRect();
+  if (a.bottom < 60 || a.top > innerHeight) {
+    const r = fromEl.getBoundingClientRect();
+    a = { left: r.left + r.width / 2 - 40, top: r.top - 60, width: 80, height: 106 };
+  }
+  const b = btn.getBoundingClientRect();
+  const g = img.cloneNode();
+  Object.assign(g.style, {
+    position: 'fixed', left: a.left + 'px', top: a.top + 'px', width: a.width + 'px', height: a.height + 'px',
+    objectFit: 'cover', borderRadius: '10px', zIndex: 70, pointerEvents: 'none',
+    boxShadow: '0 16px 34px rgba(15,26,46,.35)', border: '2px solid #fff'
+  });
+  document.body.appendChild(g);
+  const dx = b.left + b.width / 2 - (a.left + a.width / 2);
+  const dy = b.top + b.height / 2 - (a.top + a.height / 2) - 6;
+  const anim = g.animate([
+    { transform: 'translate(0,0) scale(1) rotate(0deg)', opacity: 1 },
+    { transform: `translate(${dx * .35}px, ${dy * .2 - 30}px) scale(.75) rotate(-5deg)`, opacity: 1, offset: .35 },
+    { transform: `translate(${dx}px, ${dy}px) scale(.1) rotate(-12deg)`, opacity: .3 }
+  ], { duration: 700, easing: 'cubic-bezier(.45,0,.6,1)' });
+  anim.onfinish = () => { g.remove(); bumpTab(tab); };
+}
+
+function showDone(sub) {
+  const d = document.createElement('div');
+  d.className = 'done';
+  d.innerHTML = `<div class="done-card">
+    <svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M15 27l7 7 15-16"/></svg>
+    <div class="done-t">Filed.</div>
+    <div class="done-s">${esc(sub)}</div></div>`;
+  document.body.appendChild(d);
+  setTimeout(() => d.remove(), reduceMotion() ? 1200 : 1950);
+}
+
 /* ---------- Settings (small, kept in localStorage) ---------- */
 const Settings = {
-  key: 'snapstub.settings',
+  key: 'xpenseit.settings',
   data: null,
   load() {
     let s = {};
     try { s = JSON.parse(localStorage.getItem(this.key)) || {}; } catch {}
     const emails = [0, 1, 2].map(i => ({ label: '', address: '', ...((s.emails || [])[i] || {}) }));
-    this.data = { defaultCategory: 'Meals', enhance: false, lastRecipient: '', setupDone: false, hideInstall: false, ...s, emails };
+    this.data = { defaultCategory: 'Meals', enhance: false, lastRecipient: '', setupDone: false, hideInstall: false, tripName: '', combine: false, ...s, emails };
   },
   save() { try { localStorage.setItem(this.key, JSON.stringify(this.data)); } catch {} },
   saved() { return this.data.emails.filter(e => EMAIL_RE.test(e.address.trim())).map(e => ({ label: e.label.trim(), address: e.address.trim() })); }
@@ -536,7 +745,7 @@ const Settings = {
 const DB = (() => {
   let opening;
   const open = () => opening || (opening = new Promise((res, rej) => {
-    const r = indexedDB.open('snapstub', 1);
+    const r = indexedDB.open('xpenseit', 1);
     r.onupgradeneeded = () => r.result.createObjectStore('receipts', { keyPath: 'id' });
     r.onsuccess = () => res(r.result);
     r.onerror = () => rej(r.error);
@@ -570,7 +779,7 @@ function dropThumb(id) {
 
 async function refreshData() {
   records = (await DB.all()).sort((a, b) => b.createdAt - a.createdAt);
-  renderBatch();
+  renderTrip();
   renderHistory();
   renderStorage();
 }
@@ -646,7 +855,7 @@ function buildPdf(pages, title) {
   obj(1, () => w('<< /Type /Catalog /Pages 2 0 R >>'));
   obj(2, () => w(`<< /Type /Pages /Count ${pages.length} /Kids [${pages.map((_, i) => `${4 + i * 3} 0 R`).join(' ')}] >>`));
   const safeTitle = String(title).replace(/[^\x20-\x7e]/g, '').replace(/([\\()])/g, '\\$1');
-  obj(3, () => w(`<< /Title (${safeTitle}) /Producer (SnapStub) >>`));
+  obj(3, () => w(`<< /Title (${safeTitle}) /Producer (XpenseIt) >>`));
 
   pages.forEach((p, i) => {
     const landscape = p.w > p.h;
@@ -677,15 +886,15 @@ function recordToFile(rec) {
   return new File([buildPdf(rec.pages, rec.fileName.replace(/\.pdf$/, ''))], rec.fileName, { type: 'application/pdf' });
 }
 
-function combinedName(recs) {
+function combinedName(recs, tripName) {
   const dates = recs.map(r => r.date).sort();
   const range = dates[0] === dates[dates.length - 1] ? dates[0] : `${dates[0]}_to_${dates[dates.length - 1]}`;
-  return `Receipts_${range}_${recs.length}-items.pdf`;
+  return `${slug(tripName) || 'Receipts'}_${range}_${recs.length}-receipts.pdf`;
 }
 
-function combinedFile(recs) {
+function combinedFile(recs, tripName) {
   const ordered = [...recs].sort((a, b) => a.date.localeCompare(b.date) || a.createdAt - b.createdAt);
-  const name = combinedName(ordered);
+  const name = combinedName(ordered, tripName);
   return new File([buildPdf(ordered.flatMap(r => r.pages), name.replace(/\.pdf$/, ''))], name, { type: 'application/pdf' });
 }
 
@@ -733,7 +942,7 @@ function resetCapture() {
 
 function renderCats() {
   $('#fCats').innerHTML = CATEGORIES.map(c =>
-    `<button type="button" class="chip${c === cap.category ? ' on' : ''}" data-cat="${esc(c)}">${CAT_EMOJI[c]} ${esc(c)}</button>`).join('');
+    `<button type="button" class="chip${c === cap.category ? ' on' : ''}" data-cat="${esc(c)}">${catIcon(c)}${esc(c)}</button>`).join('');
   updateFileName();
 }
 
@@ -766,8 +975,8 @@ function renderCapture() {
     </div>`).join('') + `
     <div class="add-page">
       <div class="lbl">Add page</div>
-      <button data-act="camera">📷 Camera</button>
-      <button data-act="library">🖼️ Photos</button>
+      <button data-act="camera">${ICON_CAM} Camera</button>
+      <button data-act="library">${ICON_PHOTO} Photos</button>
     </div>`;
 }
 
@@ -802,7 +1011,7 @@ function addFiles(files) {
   }
 }
 
-async function saveCapture(inBatch) {
+async function saveCapture(inBatch, animateTo, fromEl) {
   if (!cap.pages.length) return null;
   const f = captureFields();
   if (!f.vendor) { flagInvalid($('#fVendor')); toast('Add the vendor name first'); return null; }
@@ -810,30 +1019,35 @@ async function saveCapture(inBatch) {
   if (!cap.pages.length) return null;
   const rec = {
     id: uid(), createdAt: Date.now(), ...f, inBatch, sentAt: null,
+    trip: inBatch ? Settings.data.tripName.trim() : '',
     pages: await Promise.all(cap.pages.map(async p => ({ buf: await p.blob.arrayBuffer(), w: p.w, h: p.h })))
   };
   rec.fileName = fileNameFor(rec);
   await DB.put(rec);
   if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  if (animateTo) fileInto(animateTo, fromEl);
   resetCapture();
   await refreshData();
   return rec;
 }
 
 /* ---------- Sending ---------- */
-function emailSubject(recs) {
-  if (recs.length === 1) {
+function emailSubject(recs, tripName) {
+  if (recs.length === 1 && !tripName) {
     const r = recs[0];
     return ['Receipt', r.vendor, r.category, fmtMoney(r.amount), fmtDate(r.date)].filter(Boolean).join(' – ');
   }
   const t = sum(recs);
-  return `Receipts (${recs.length})${t ? ' – ' + fmtMoney(t) + ' total' : ''}`;
+  const head = tripName ? `${tripName} trip` : 'Receipts';
+  return `${head} – ${recs.length} receipt${recs.length === 1 ? '' : 's'}${t ? ' – ' + fmtMoney(t) : ''}`;
 }
 
-function emailBody(recs) {
-  const lines = recs.map(r => '• ' + [fmtDate(r.date), r.vendor, r.category, fmtMoney(r.amount)].filter(Boolean).join(' | ') + (r.note ? ` — ${r.note}` : ''));
+function emailBody(recs, tripName) {
+  const lines = [];
+  if (tripName) lines.push(`Trip: ${tripName} (${dateRange(recs)})`, '');
+  recs.forEach(r => lines.push('• ' + [fmtDate(r.date), r.vendor, r.category, fmtMoney(r.amount)].filter(Boolean).join(' | ') + (r.note ? ` — ${r.note}` : '')));
   if (recs.length > 1) lines.push('', `Total: ${fmtMoney(sum(recs))}`);
-  return lines.join('\n') + '\n\nSent with SnapStub';
+  return lines.join('\n') + '\n\nFiled with XpenseIt';
 }
 
 function downloadFile(file) {
@@ -845,22 +1059,24 @@ function downloadFile(file) {
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
 }
 
-function openSend(recs, fromBatch = false) {
+function openSend(recs, fromTrip = false) {
   const saved = Settings.saved();
   const multi = recs.length > 1;
+  const tripName = fromTrip ? Settings.data.tripName.trim() : '';
   let opts = saved.map((e, i) => `<option value="${i}">${esc(e.label ? `${e.label} – ${e.address}` : e.address)}</option>`).join('');
   if (saved.length > 1) opts += `<option value="all">All saved addresses (${saved.length})</option>`;
   opts += '<option value="other">Other…</option>';
   const canShareFiles = !!(navigator.canShare && navigator.canShare({ files: [new File(['x'], 'x.pdf', { type: 'application/pdf' })] }));
 
   Sheet.open(`
-    <h2>${multi ? `Send ${recs.length} receipts` : 'Send receipt'}</h2>
-    <p class="sub">${esc(emailSubject(recs))}</p>
+    <div class="eyebrow">${fromTrip ? 'Send trip' : 'Send receipt'}</div>
+    <h2 style="margin-top:4px">${esc(tripName || (multi ? `${recs.length} receipts` : recs[0].vendor || 'Receipt'))}</h2>
+    <p class="sub">${esc(emailSubject(recs, tripName))}</p>
     <div class="filelist" id="sFiles"></div>
     <div class="form">
       ${multi ? `<label class="switch-row" style="border-top:0;margin:0 0 14px;padding:0">
         <span>Combine into one PDF<small>Off = one PDF per receipt</small></span>
-        <input type="checkbox" id="sCombine"><i class="switch"></i></label>` : ''}
+        <input type="checkbox" id="sCombine"${Settings.data.combine ? ' checked' : ''}><i class="switch"></i></label>` : ''}
       <div class="field">
         <label for="sTo">Send to</label>
         <select id="sTo">${opts}</select>
@@ -904,13 +1120,13 @@ function openSend(recs, fromBatch = false) {
     files = null;
     setTimeout(() => {
       const combine = multi && $('#sCombine') && $('#sCombine').checked;
-      files = combine ? [combinedFile(recs)] : recs.map(recordToFile);
-      $('#sFiles').innerHTML = files.map(f => `<div>📄 ${esc(f.name)} <span class="muted">(${Math.max(1, Math.round(f.size / 1024))} KB)</span></div>`).join('');
+      files = combine ? [combinedFile(recs, tripName)] : recs.map(recordToFile);
+      $('#sFiles').innerHTML = files.map(f => `<div>${esc(f.name)} <span class="muted">(${Math.max(1, Math.round(f.size / 1024))} KB)</span></div>`).join('');
       go.disabled = false;
       go.textContent = canShareFiles ? 'Copy address & Share' : 'Download & open email';
     }, 30);
   };
-  if (multi) $('#sCombine').onchange = prepare;
+  if (multi) $('#sCombine').onchange = e => { Settings.data.combine = e.target.checked; Settings.save(); prepare(); };
   prepare();
 
   // No awaits before navigator.share: iOS only allows it directly inside the tap.
@@ -924,73 +1140,96 @@ function openSend(recs, fromBatch = false) {
     else to = [saved[+sel.value].address];
     if (!files) return;
     const toStr = to.join(', ');
-    const subject = emailSubject(recs), body = emailBody(recs);
+    const subject = emailSubject(recs, tripName), body = emailBody(recs, tripName);
 
     if (canShareFiles && navigator.canShare({ files })) {
       try { navigator.clipboard && navigator.clipboard.writeText(toStr).catch(() => {}); } catch {}
       navigator.share({ files, title: subject, text: body })
-        .then(() => markSent(recs, fromBatch))
+        .then(() => markSent(recs, fromTrip))
         .catch(err => { if (err.name !== 'AbortError') toast('Could not share: ' + err.message); });
     } else {
       files.forEach(downloadFile);
       setTimeout(() => {
         location.href = `mailto:${to.join(',')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body + '\n\n(Attach the downloaded PDF.)')}`;
       }, 400);
-      markSent(recs, fromBatch);
+      markSent(recs, fromTrip);
     }
   };
 }
 
-async function markSent(recs, fromBatch) {
+async function markSent(recs, fromTrip) {
   const now = Date.now();
+  const tripName = Settings.data.tripName.trim();
   for (const r of recs) {
     r.sentAt = now;
-    if (fromBatch) r.inBatch = false;
+    if (fromTrip) { r.inBatch = false; r.trip = tripName || r.trip || ''; }
     await DB.put(r);
   }
+  if (fromTrip) { Settings.data.tripName = ''; Settings.save(); $('#tripName').value = ''; }
   Sheet.close();
   await refreshData();
-  toast(fromBatch ? 'Sent! Batch cleared. Receipts remain in History.' : 'Sent! Saved in History.');
+  showDone(fromTrip ? (tripName ? `${tripName} sent` : 'Trip sent') : 'Snap. Filed. Done.');
 }
 
-/* ---------- Batch ---------- */
-function itemHtml(r, { removable = false } = {}) {
-  const sub = [CAT_EMOJI[r.category] + ' ' + r.category, fmtDate(r.date), r.pages.length > 1 ? `${r.pages.length} pages` : ''].filter(Boolean).join(' · ');
-  const badge = r.sentAt ? '<span class="badge sent">Sent</span>' : (r.inBatch && !removable ? '<span class="badge batch">In batch</span>' : '');
+/* ---------- Ticket cards ---------- */
+function ticketHtml(r, { removable = false } = {}) {
+  const sub = [fmtDate(r.date), r.pages.length > 1 ? `${r.pages.length} pages` : ''].filter(Boolean).join(' · ');
+  const badges = [
+    r.sentAt ? '<span class="badge sent">Sent</span>' : '',
+    !removable && r.inBatch ? '<span class="badge trip">On trip</span>' : '',
+    !removable && !r.inBatch && r.trip ? `<span class="badge trip">${esc(r.trip)}</span>` : ''
+  ].join('');
   return `
-    <div class="item" data-open="${r.id}" role="button" tabindex="0">
-      <img class="thumb" src="${thumbUrl(r)}" alt="">
-      <div class="meta"><div class="t">${esc(r.vendor || 'Receipt')}</div><div class="s">${esc(sub)}</div></div>
-      <div class="amt">${esc(fmtMoney(r.amount))}<br>${badge}</div>
-      ${removable ? `<button class="rm" data-unbatch="${r.id}" aria-label="Remove from batch">${ICON_X}</button>` : ''}
+    <div class="ticket" data-open="${r.id}" role="button" tabindex="0">
+      <div class="t-main">
+        <img class="thumb" src="${thumbUrl(r)}" alt="">
+        <div class="meta">
+          <div class="t">${esc(r.vendor || 'Receipt')}</div>
+          <div class="s">${catIcon(r.category)}<span>${esc(r.category)} · ${esc(sub)}</span></div>
+          ${badges ? `<div class="badges">${badges}</div>` : ''}
+        </div>
+      </div>
+      <div class="t-stub">
+        <div class="lbl">Total</div>
+        <div class="amt">${r.amount != null ? esc(fmtMoney(r.amount)) : '—'}</div>
+        ${removable ? `<button class="rm" data-unbatch="${r.id}" aria-label="Remove from trip">${ICON_X}</button>` : ''}
+      </div>
     </div>`;
 }
 
-function batchRecs() { return records.filter(r => r.inBatch).sort((a, b) => a.date.localeCompare(b.date) || a.createdAt - b.createdAt); }
+/* ---------- Trip ---------- */
+function tripRecs() { return records.filter(r => r.inBatch).sort((a, b) => a.date.localeCompare(b.date) || a.createdAt - b.createdAt); }
 
-function renderBatch() {
-  const b = batchRecs();
-  $('#batchFull').hidden = !b.length;
-  $('#batchEmpty').hidden = !!b.length;
-  $('#batchCount').hidden = !b.length;
-  $('#batchCount').textContent = b.length;
-  $('#bCount').textContent = b.length;
-  $('#bTotal').textContent = fmtMoney(sum(b));
-  $('#batchList').innerHTML = b.map(r => itemHtml(r, { removable: true })).join('');
+function renderTrip() {
+  const t = tripRecs();
+  const name = Settings.data.tripName.trim();
+  $('#tripFull').hidden = !t.length;
+  $('#tripEmpty').hidden = !!t.length;
+  $('#tripCount').hidden = !t.length;
+  $('#tripCount').textContent = t.length;
+  $('#tDates').textContent = dateRange(t);
+  $('#tCount').textContent = t.length;
+  $('#tTotal').textContent = fmtMoney(sum(t));
+  $('#tripList').innerHTML = t.map(r => ticketHtml(r, { removable: true })).join('');
+  if (document.activeElement !== $('#tripName')) $('#tripName').value = Settings.data.tripName;
+  $('#addTripLabel').textContent = name ? `Add to ${name}` : 'Add to trip';
+  const pill = $('#tripPill');
+  pill.hidden = !(name || t.length);
+  pill.innerHTML = `<span>${esc(name || 'Trip')}</span><b>${t.length}</b>`;
 }
 
 /* ---------- History ---------- */
 function renderHistory() {
   const q = $('#hSearch').value.trim().toLowerCase();
-  const list = q ? records.filter(r => [r.vendor, r.category, r.note, r.fileName, fmtMoney(r.amount), fmtDate(r.date)].join(' ').toLowerCase().includes(q)) : records;
-  $('#hSub').textContent = records.length ? `${records.length} receipt${records.length === 1 ? '' : 's'} · ${fmtMoney(sum(records))}` : "Every receipt you've captured.";
+  const list = q ? records.filter(r => [r.vendor, r.category, r.note, r.trip, r.fileName, fmtMoney(r.amount), fmtDate(r.date)].join(' ').toLowerCase().includes(q)) : records;
+  $('#hSub').textContent = records.length ? `${records.length} receipt${records.length === 1 ? '' : 's'} · ${fmtMoney(sum(records))}` : "Every receipt you've filed.";
   $('#histEmpty').hidden = list.length > 0;
   $('#histEmpty b').textContent = records.length ? 'No matches' : 'No receipts yet';
   let html = '', month = '';
   for (const r of list) {
     const m = isoToDate(r.date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     if (m !== month) { if (month) html += '</div>'; html += `<div class="month">${esc(m)}</div><div class="list">`; month = m; }
-    html += itemHtml(r);
+    html += ticketHtml(r);
   }
   if (month) html += '</div>';
   $('#histList').innerHTML = html;
@@ -1000,9 +1239,14 @@ function openDetail(id) {
   const r = records.find(x => x.id === id);
   if (!r) return;
   const urls = r.pages.map(p => URL.createObjectURL(new Blob([p.buf], { type: 'image/jpeg' })));
+  const status = [
+    r.sentAt ? `Sent ${new Date(r.sentAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}` : 'Not sent yet',
+    r.inBatch ? 'On current trip' : (r.trip ? `Trip: ${r.trip}` : '')
+  ].filter(Boolean).join(' · ');
   Sheet.open(`
-    <h2>${esc(r.vendor || 'Receipt')}</h2>
-    <p class="sub">${r.sentAt ? `✅ Sent ${new Date(r.sentAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}` : 'Not sent yet'}${r.inBatch ? ' · In batch' : ''}</p>
+    <div class="eyebrow">${esc(r.category)}</div>
+    <h2 style="margin-top:4px">${esc(r.vendor || 'Receipt')}</h2>
+    <p class="sub">${esc(status)}</p>
     <div class="detail-pages">${urls.map((u, i) => `<img src="${u}" alt="Page ${i + 1}">`).join('')}</div>
     <div class="form">
       <div class="grid2">
@@ -1016,7 +1260,7 @@ function openDetail(id) {
     </div>
     <div class="actions">
       <button class="btn primary" id="dSend">Email this receipt</button>
-      <button class="btn secondary" id="dBatch">${r.inBatch ? 'Remove from batch' : 'Add to batch'}</button>
+      <button class="btn secondary" id="dBatch">${r.inBatch ? 'Remove from trip' : 'Add to current trip'}</button>
       <div class="row-center"><button class="link danger" id="dDel">Delete receipt</button></div>
     </div>
   `, () => urls.forEach(URL.revokeObjectURL));
@@ -1036,10 +1280,11 @@ function openDetail(id) {
     r.inBatch = !r.inBatch;
     await commit();
     Sheet.close();
-    toast(r.inBatch ? `Added to batch (${batchRecs().length})` : 'Removed from batch');
+    if (r.inBatch) bumpTab('trip');
+    toast(r.inBatch ? `Added to trip (${tripRecs().length})` : 'Removed from trip');
   };
   $('#dDel').onclick = async () => {
-    if (!confirm('Delete this receipt from SnapStub? This cannot be undone.')) return;
+    if (!confirm('Delete this receipt from XpenseIt? This cannot be undone.')) return;
     await DB.del(r.id);
     dropThumb(r.id);
     Sheet.close();
@@ -1070,7 +1315,7 @@ function renderSettings() {
   $('#sEnhance').checked = Settings.data.enhance;
 }
 
-async function renderStorage() {
+function renderStorage() {
   const n = records.length;
   const bytes = records.reduce((t, r) => t + r.pages.reduce((s, p) => s + p.buf.byteLength, 0), 0);
   const size = bytes > 1048576 ? (bytes / 1048576).toFixed(1) + ' MB' : Math.round(bytes / 1024) + ' KB';
@@ -1080,9 +1325,10 @@ async function renderStorage() {
 function openSetup() {
   Sheet.open(`
     <div style="text-align:center;margin:6px 0 18px">
-      <img src="icons/icon-192.png" alt="" style="width:76px;height:76px;border-radius:20px;box-shadow:0 12px 34px -8px rgba(139,92,246,.6)">
-      <h2 style="margin-top:14px">Welcome to SnapStub</h2>
-      <p class="sub" style="margin-bottom:0">Where should your receipts go? Save up to three addresses. You can change them later in Settings.</p>
+      <img src="icons/icon-192.png" alt="" style="width:76px;height:76px;border-radius:18px;box-shadow:0 14px 34px -10px rgba(15,26,46,.6)">
+      <h2 style="margin-top:14px;padding:0">Welcome to Xpense<span style="color:var(--gold)">It</span></h2>
+      <div class="eyebrow" style="margin-top:6px">Snap. Filed. Done.</div>
+      <p class="sub" style="margin:12px 0 0">Where should your receipts go? Save up to three addresses. You can change them later in Settings.</p>
     </div>
     <div class="form" id="setupSlots">
       ${[0, 1, 2].map(i => `
@@ -1109,7 +1355,7 @@ function openSetup() {
     Settings.save();
     renderSettings();
     Sheet.close();
-    toast(Settings.saved().length ? 'All set. Snap your first receipt!' : 'You can add emails later in Settings');
+    toast(Settings.saved().length ? 'All set. Snap your first receipt.' : 'You can add emails later in Settings');
   };
 }
 
@@ -1128,7 +1374,7 @@ document.addEventListener('click', async e => {
   const unb = e.target.closest('[data-unbatch]');
   if (unb) {
     const r = records.find(x => x.id === unb.dataset.unbatch);
-    if (r) { r.inBatch = false; await DB.put(r); await refreshData(); toast('Removed from batch'); }
+    if (r) { r.inBatch = false; await DB.put(r); await refreshData(); toast('Removed from trip'); }
     return;
   }
 
@@ -1165,25 +1411,29 @@ document.addEventListener('click', async e => {
     if (rec) openSend([rec]);
   }
   else if (act === 'addBatch') {
-    const rec = await saveCapture(true);
-    if (rec) toast(`Added to batch (${batchRecs().length}) 🧳`);
+    const rec = await saveCapture(true, 'trip', actEl);
+    if (rec) toast(`Added to ${Settings.data.tripName.trim() || 'trip'} · ${tripRecs().length} receipt${tripRecs().length === 1 ? '' : 's'}`);
   }
   else if (act === 'saveOnly') {
-    const rec = await saveCapture(false);
-    if (rec) toast('Saved to History');
+    const rec = await saveCapture(false, 'history', actEl);
+    if (rec) toast('Filed in History');
   }
   else if (act === 'sendBatch') {
-    const b = batchRecs();
-    if (b.length) openSend(b, true);
+    const t = tripRecs();
+    if (t.length) openSend(t, true);
   }
   else if (act === 'clearBatch') {
-    if (!confirm('Take all receipts out of the batch? They stay in History.')) return;
-    for (const r of batchRecs()) { r.inBatch = false; await DB.put(r); }
+    if (!confirm('End this trip without sending? The receipts stay in History.')) return;
+    const name = Settings.data.tripName.trim();
+    for (const r of tripRecs()) { r.inBatch = false; r.trip = name || r.trip || ''; await DB.put(r); }
+    Settings.data.tripName = '';
+    Settings.save();
+    $('#tripName').value = '';
     await refreshData();
-    toast('Batch emptied');
+    toast('Trip ended');
   }
   else if (act === 'wipe') {
-    if (!confirm('Delete ALL receipts from SnapStub? This cannot be undone.')) return;
+    if (!confirm('Delete ALL receipts from XpenseIt? This cannot be undone.')) return;
     await DB.clear();
     [...thumbs.keys()].forEach(dropThumb);
     await refreshData();
@@ -1193,14 +1443,16 @@ document.addEventListener('click', async e => {
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && e.target.matches('[data-open]')) openDetail(e.target.dataset.open);
+  if (e.key === 'Enter' && e.target.id === 'tripName') e.target.blur();
 });
 
-$('#camIn').addEventListener('change', e => addFiles(e.target.files));
+$('#camIn').addEventListener('change', e => { if (e.target.files.length) shutterFlash(); addFiles(e.target.files); });
 $('#libIn').addEventListener('change', e => addFiles(e.target.files));
 $('#enhance').addEventListener('change', e => { cap.enhance = e.target.checked; cap.pages.forEach(processCapPage); });
 ['#fDate', '#fAmount', '#fVendor', '#fNote'].forEach(s => $(s).addEventListener('input', updateFileName));
 $('#fAmount').addEventListener('blur', e => { const n = parseAmount(e.target.value); if (n != null) e.target.value = n.toFixed(2); });
 $('#hSearch').addEventListener('input', renderHistory);
+$('#tripName').addEventListener('input', e => { Settings.data.tripName = e.target.value; Settings.save(); renderTrip(); });
 
 $('#emailSlots').addEventListener('change', e => {
   const el = e.target.closest('[data-slot]');
@@ -1228,6 +1480,7 @@ $('#sEnhance').addEventListener('change', e => {
 Settings.load();
 renderSettings();
 resetCapture();
+renderTrip();
 refreshData().catch(err => toast('Storage error: ' + err.message));
 if (!Settings.data.setupDone) openSetup();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});

@@ -1,5 +1,5 @@
-// SnapStub service worker: makes the app open instantly and work offline.
-const CACHE = 'snapstub-v1';
+// XpenseIt service worker: makes the app open instantly and work offline.
+const CACHE = 'xpenseit-v2';
 const ASSETS = [
   './',
   './index.html',
